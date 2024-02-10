@@ -27,6 +27,7 @@ public class Enemy : MonoBehaviour
     private float meleeCirlceRadius = 1.0f;
     [SerializeField]
     private float meleeCooldown = 5f;
+    private float jumpCooldown = 5f;
     [SerializeField]
     private bool hasCreatedProjectile = false;
 
@@ -47,22 +48,24 @@ public class Enemy : MonoBehaviour
 
     protected virtual void Update()
     {
-        onGround = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer | platformLayer);
+        onGround = Physics2D.OverlapCircle(transform.position, 0.7f, groundLayer | platformLayer);
         onPlatform = Physics2D.OverlapCircle(transform.position, 0.8f, platformLayer);
 
         if (onGround && isChasing)
         {
             MoveToPlayer();
         }
+        if (canJump)
+        {
+            JumpToPlayer();
+
+        }
 
         if (canMelee)
         {
             Melee();
         }
-        if (canJump)
-        {
-            JumpToPlayer();
-        }
+        
         if (runAway)
         {
             RunFromPlayer();
@@ -159,9 +162,18 @@ public class Enemy : MonoBehaviour
         {
             Vector2 jumpDirection = (player.transform.position - transform.position).normalized;
             rb.AddForce(jumpDirection * stats.jumpForce, ForceMode2D.Impulse);
+            canJump = false;
+            StartCoroutine(JumpCooldown());
             Debug.Log("Jumping");
         }
     }
+
+      private IEnumerator JumpCooldown()
+    {
+        yield return new WaitForSeconds(jumpCooldown);
+        canJump = true;
+    }
+
 
     private void CreateProjectileOnDeath()
     {
@@ -191,4 +203,6 @@ public class Enemy : MonoBehaviour
             transform.localScale = new Vector3(1, 1, 1);
         }
     }
+
+   
 }
