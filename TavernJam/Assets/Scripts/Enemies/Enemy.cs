@@ -24,9 +24,17 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private float meleeCirlceRadius = 1.0f;
     [SerializeField]
-    private float meleeCooldown = 15f;
+    private float meleeCooldown = 5f;
     [SerializeField]
-    private float meleeDamage = 1.0f;
+    private bool hasCreatedProjectile = false;
+
+    private int hitNumber;
+    public GameObject projectile;
+    private bool haveProjectile = false;
+    private bool runAway;
+    private bool isChasing = true;
+
+
 
 
     protected virtual void Awake()
@@ -43,9 +51,9 @@ public class Enemy : MonoBehaviour
     {
         onGround = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer);
 
-        if (onGround)
+        if (onGround && isChasing)
         {
-        MoveToPlayer();
+            MoveToPlayer();
         }
 
         if (canMelee)
@@ -55,6 +63,11 @@ public class Enemy : MonoBehaviour
         if (canJump)
         {
             JumpToPlayer();
+        }
+        if (runAway)
+        {
+            RunFromPlayer();
+         
         }
     }
 
@@ -68,17 +81,43 @@ public class Enemy : MonoBehaviour
         // Set the horizontal velocity
         rb.velocity = chasingDirection * stats.Speed;
 
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, chasingDirection, 3f, groundLayer);
+
+        if (hit.collider != null && onGround)
+        {
+            // Enemy is about to hit a wall, so jump
+            JumpToWall();
+        }
+
+
         float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
         if (distanceToPlayer <= stopDistance)
         {
             // Stop horizontal movement if the enemy is close enough to the player
             rb.velocity = new Vector2(0f, rb.velocity.y);
         }
+        if (hitNumber ==3)
+        {
+            runAway = true;
+            isChasing = false;
+        }
+    }
+
+    private void JumpToWall()
+    {
+        // Check if the enemy is on the ground before jumping
+        if (onGround)
+        {
+            rb.AddForce(Vector2.up * stats.jumpForce, ForceMode2D.Impulse);
+            Debug.Log("Jumping to wall");
+        }
     }
 
     protected void OnDeath(GameObject death)
     {
+
         Destroy(death);
+
     }
 
     public virtual void DisableEnemy()
@@ -93,8 +132,6 @@ public class Enemy : MonoBehaviour
 
     public void Melee()
     {
-        // if (canMelee)
-        // {
         Vector2 position = transform.position;
         Collider2D[] colliders = Physics2D.OverlapCircleAll(position + chasingDirection * meleePointOffset, meleeCirlceRadius);
 
@@ -105,15 +142,15 @@ public class Enemy : MonoBehaviour
                 Player pHealth = colliders[i].GetComponent<Player>();
                 if (pHealth != null)
                 {
-                    pHealth.TakeDamage(meleeDamage);
+                    pHealth.TakeDamage(stats.Attack);
                     Debug.Log(pHealth.baseStats.CurrentHealth);
                     canMelee = false;
+                    hitNumber++;
+                  
+                    StartCoroutine(MeleeCooldown());
                 }
             }
         }
-
-        StartCoroutine(MeleeCooldown());
-        // }
     }
 
 
@@ -126,9 +163,17 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(float damage)
     {
         stats.CurrentHealth -= damage;
-        if (stats.CurrentHealth <= 0f)
+        if (stats.CurrentHealth <= 0f && !hasCreatedProjectile)
         {
+
             OnDeath(gameObject);
+            Debug.Log(stats.CurrentHealth);
+            if (haveProjectile)
+            {
+                CreateProjectileOnDeath();
+                hasCreatedProjectile = true;
+
+            }
         }
     }
 
@@ -138,7 +183,40 @@ public class Enemy : MonoBehaviour
         {
             Vector2 jumpDirection = (player.transform.position - transform.position).normalized;
             rb.AddForce(jumpDirection * stats.jumpForce, ForceMode2D.Impulse);
-        Debug.Log("Jumping");
+            Debug.Log("Jumping");
+        }
+
+    }
+
+    private void CreateProjectileOnDeath()
+    {
+
+        GameObject bullet = Instantiate(projectile, transform.position, Quaternion.identity);
+        bullet.GetComponent<Rigidbody2D>().position = transform.position;
+
+    }
+
+    private void RunFromPlayer()
+    {
+
+        haveProjectile = true;
+
+        // Calculate the opposite direction from the player
+        Vector2 oppositeDirection = -(player.transform.position - transform.position).normalized;
+
+        Vector2 runningDirection = new Vector2(oppositeDirection.x, 0);
+        // Set the velocity to move away from the player
+        rb.velocity = runningDirection* stats.Speed;
+
+        if (rb.velocity.x < 0)
+        {
+            // Flip the sprite when moving left
+            transform.localScale = new Vector3(-1, 1, 1);
+        }
+        else if (rb.velocity.x > 0)
+        {
+            // Flip the sprite back when moving right
+            transform.localScale = new Vector3(1, 1, 1);
         }
     
     }

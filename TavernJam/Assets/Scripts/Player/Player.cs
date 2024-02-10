@@ -20,6 +20,7 @@ public class Player : MonoBehaviour
     private bool isGrounded;
     private LayerMask groundLayer;
     private Vector2 movement;
+    private Enemy enemy;
 
     private void Start()
     {
@@ -133,18 +134,27 @@ public class Player : MonoBehaviour
         Destroy(death);
     }
 
-    private void MeleeAttack() 
+    private void MeleeAttack()
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, attackRadius);
+        // Cast a ray from the mouse position
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
 
-        // Deal damage to enemies found
-        foreach (Collider2D collider in colliders)
+        RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+
+        if (hit.collider != null)
         {
-            if (collider.CompareTag("Enemy"))
+            // Check if the hit collider is an enemy
+            if (hit.collider.CompareTag("Enemy"))
             {
-                Enemy enemy = collider.GetComponent<Enemy>();
-                if (enemy != null)
+                Enemy enemy = hit.collider.GetComponent<Enemy>();
+
+                // Check if the enemy is within the attack radius
+                float distanceToEnemy = Vector2.Distance(transform.position, enemy.transform.position);
+
+                if (distanceToEnemy <= attackRadius)
                 {
+                    // Deal damage to the enemy
                     enemy.TakeDamage(baseStats.Attack);
                     Debug.Log(enemy.stats.CurrentHealth);
                 }
