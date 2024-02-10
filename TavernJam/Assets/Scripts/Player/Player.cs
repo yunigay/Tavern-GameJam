@@ -6,6 +6,22 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public BaseStatsContainer baseStats;
+    public BaseStatsContainer bigFormStats;
+    public BaseStatsContainer mediumFormStats;
+    public BaseStatsContainer smallFormStats;
+
+    public Animator bigFormAnimator;
+    public Animator mediumFormAnimator;
+    public Animator smallFormAnimator;
+    private enum PlayerForm
+    {
+        Big,
+        Medium,
+        Small
+    }
+
+    private PlayerForm currentForm;
+
     public float fallMultiplier = 2.5f;
     public float lowJumpMultiplier = 2f;
     public float attackRadius = 2f;
@@ -39,7 +55,7 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         groundLayer = LayerMask.GetMask("Ground"); // Make sure to set the ground layer in Unity
-        baseStats.CurrentHealth = baseStats.MaxHealth;
+        SwitchForm(PlayerForm.Big);
     }
 
 
@@ -256,9 +272,19 @@ public class Player : MonoBehaviour
     public void TakeDamage(float damage) 
     {
         baseStats.CurrentHealth -= damage;
+
+        // Check for form switch based on health
         if (baseStats.CurrentHealth <= 0f)
         {
             OnDeath(gameObject);
+        }
+        else if (baseStats.CurrentHealth <= mediumFormStats.MaxHealth && currentForm != PlayerForm.Small)
+        {
+            SwitchForm(PlayerForm.Small);
+        }
+        else if (baseStats.CurrentHealth <= bigFormStats.MaxHealth && currentForm != PlayerForm.Medium)
+        {
+            SwitchForm(PlayerForm.Medium);
         }
     }
 
@@ -293,6 +319,33 @@ public class Player : MonoBehaviour
                 }
             }
         }
+    }
+
+
+    private void SwitchForm(PlayerForm newForm)
+    {
+        // Update the current form
+        currentForm = newForm;
+
+        // Adjust properties based on the new form
+        switch (currentForm)
+        {
+            case PlayerForm.Big:
+                baseStats = bigFormStats;
+                animator = mediumFormAnimator;
+                break;
+            case PlayerForm.Medium:
+                baseStats = mediumFormStats;
+                animator = mediumFormAnimator;
+
+                break;
+            case PlayerForm.Small:
+                baseStats = smallFormStats;
+                animator = mediumFormAnimator;
+                break;
+        }
+
+        // Update animations or perform any other necessary adjustments here...
     }
 
 }
