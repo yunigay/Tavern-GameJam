@@ -40,5 +40,8 @@ public class HealthComponent : MonoBehaviour
         SetCurrentHealth(CurrentHealth - damage);
     }
 
-
+    public float GetCurrentHealth()
+    {
+        return CurrentHealth;
+    }
 }

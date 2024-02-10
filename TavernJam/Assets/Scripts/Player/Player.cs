@@ -5,7 +5,24 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public HealthComponent health;
     public BaseStatsContainer baseStats;
+    public BaseStatsContainer bigFormStats;
+    public BaseStatsContainer mediumFormStats;
+    public BaseStatsContainer smallFormStats;
+
+    public Animator bigFormAnimator;
+    public Animator mediumFormAnimator;
+    public Animator smallFormAnimator;
+    private enum PlayerForm
+    {
+        Big,
+        Medium,
+        Small
+    }
+
+    private PlayerForm currentForm;
+
     public float fallMultiplier = 2.5f;
     public float lowJumpMultiplier = 2f;
     public float attackRadius = 2f;
@@ -17,7 +34,7 @@ public class Player : MonoBehaviour
     AnimatorStateInfo stateInfo;
 
     private bool isSliding = false;
-    private float slideDuration = 4.0f;
+    private float slideDuration = 2.0f;
     private float slideTimer = 0.0f;
 
 
@@ -39,7 +56,7 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         groundLayer = LayerMask.GetMask("Ground"); // Make sure to set the ground layer in Unity
-        baseStats.CurrentHealth = baseStats.MaxHealth;
+        SwitchForm(PlayerForm.Big);
     }
 
 
@@ -51,8 +68,8 @@ public class Player : MonoBehaviour
         isGrounded = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer);
         // Handle player input
         float horizontalInput = Input.GetAxis("Horizontal");
-
         // Move the player
+
 
         if (!isDashing)
         {
@@ -179,19 +196,32 @@ public class Player : MonoBehaviour
     {
         if (isGrounded)
         {
-            // Gradually reduce velocity during the sliding state
-            rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, 0f, slideTimer / slideDuration), rb.velocity.y);
-
             // Update the sliding timer
             slideTimer += Time.deltaTime;
 
-            if (slideTimer < slideDuration)
+            // Calculate the percentage of slide completion
+            float slideProgress = slideTimer / slideDuration;
+
+            // Gradually reduce velocity during the sliding state for the second half of the duration
+            if (slideProgress > 0.5f)
+            {
+                float t = (slideProgress - 0.5f) / 0.5f;
+                rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, 0f, t), rb.velocity.y);
+            }
+            else
+            {
+                // During the first half of the duration, increase the speed
+                float newSpeed = Mathf.Lerp(0f, baseStats.Speed * 2f, slideProgress * 2f);
+                rb.velocity = new Vector2(newSpeed, rb.velocity.y);
+            }
+
+            // Play the appropriate animation based on slide progress
+            if (slideProgress < 0.5f)
             {
                 animator.Play("SlideStart");
             }
             else
             {
-                // After the slide duration, play "SlideEnd" animation and enter the "getting up" period
                 animator.Play("SlideEnd");
 
                 // Delay for the "getting up" period
@@ -255,10 +285,20 @@ public class Player : MonoBehaviour
 
     public void TakeDamage(float damage) 
     {
-        baseStats.CurrentHealth -= damage;
-        if (baseStats.CurrentHealth <= 0f)
+        health.ReceiveDamage(damage);
+
+        // Check for form switch based on health
+        if (health.GetCurrentHealth() <= 0f)
         {
             OnDeath(gameObject);
+        }
+        else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && currentForm != PlayerForm.Small)
+        {
+            SwitchForm(PlayerForm.Small);
+        }
+        else if (health.GetCurrentHealth() <= bigFormStats.MaxHealth && currentForm != PlayerForm.Medium)
+        {
+            SwitchForm(PlayerForm.Medium);
         }
     }
 
@@ -292,6 +332,30 @@ public class Player : MonoBehaviour
                     Debug.Log(enemy.stats.CurrentHealth);
                 }
             }
+        }
+    }
+
+
+    private void SwitchForm(PlayerForm newForm)
+    {
+        // Update the current form
+        currentForm = newForm;
+
+        // Adjust properties based on the new form
+        switch (currentForm)
+        {
+            case PlayerForm.Big:
+                baseStats = bigFormStats;
+                animator.runtimeAnimatorController = GetComponent<Animator>().runtimeAnimatorController;
+                break;
+            case PlayerForm.Medium:
+                baseStats = mediumFormStats;
+                animator.runtimeAnimatorController = mediumFormAnimator.runtimeAnimatorController;
+                break;
+            case PlayerForm.Small:
+                baseStats = smallFormStats;
+                animator.runtimeAnimatorController = smallFormAnimator.runtimeAnimatorController;
+                break;
         }
     }
 
