@@ -29,7 +29,7 @@ public class Player : MonoBehaviour
     {
         // Check if the player is grounded
         isGrounded = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer);
-
+        Debug.Log(isGrounded);
         // Handle player input
         float horizontalInput = Input.GetAxis("Horizontal");
 
