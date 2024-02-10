@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public HealthComponent health;
     public BaseStatsContainer baseStats;
     public BaseStatsContainer bigFormStats;
     public BaseStatsContainer mediumFormStats;
@@ -68,6 +69,7 @@ public class Player : MonoBehaviour
         // Handle player input
         float horizontalInput = Input.GetAxis("Horizontal");
 
+        Debug.Log(isGrounded);
         // Move the player
 
         if (!isDashing)
@@ -271,18 +273,18 @@ public class Player : MonoBehaviour
 
     public void TakeDamage(float damage) 
     {
-        baseStats.CurrentHealth -= damage;
+        health.ReceiveDamage(damage);
 
         // Check for form switch based on health
-        if (baseStats.CurrentHealth <= 0f)
+        if (health.GetCurrentHealth() <= 0f)
         {
             OnDeath(gameObject);
         }
-        else if (baseStats.CurrentHealth <= mediumFormStats.MaxHealth && currentForm != PlayerForm.Small)
+        else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && currentForm != PlayerForm.Small)
         {
             SwitchForm(PlayerForm.Small);
         }
-        else if (baseStats.CurrentHealth <= bigFormStats.MaxHealth && currentForm != PlayerForm.Medium)
+        else if (health.GetCurrentHealth() <= bigFormStats.MaxHealth && currentForm != PlayerForm.Medium)
         {
             SwitchForm(PlayerForm.Medium);
         }
@@ -332,7 +334,7 @@ public class Player : MonoBehaviour
         {
             case PlayerForm.Big:
                 baseStats = bigFormStats;
-                animator = mediumFormAnimator;
+                animator = GetComponent<Animator>();
                 break;
             case PlayerForm.Medium:
                 baseStats = mediumFormStats;
@@ -341,11 +343,9 @@ public class Player : MonoBehaviour
                 break;
             case PlayerForm.Small:
                 baseStats = smallFormStats;
-                animator = mediumFormAnimator;
+                animator = smallFormAnimator;
                 break;
         }
-
-        // Update animations or perform any other necessary adjustments here...
     }
 
 }
