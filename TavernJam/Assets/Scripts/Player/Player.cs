@@ -7,6 +7,8 @@ public class Player : MonoBehaviour
     public BaseStatsContainer baseStats;
     public float fallMultiplier = 2.5f;
     public float lowJumpMultiplier = 2f;
+    public float attackRadius = 2f;
+
 
     public float dashDistance = 100.0f;
     public float dashDuration = 1.0f;
@@ -23,6 +25,7 @@ public class Player : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         groundLayer = LayerMask.GetMask("Ground"); // Make sure to set the ground layer in Unity
+        baseStats.CurrentHealth = baseStats.MaxHealth;
     }
 
     private void Update()
@@ -62,6 +65,10 @@ public class Player : MonoBehaviour
             {
                 ApplyLowJumpMultiplier();
             }
+        }
+        if (Input.GetButtonDown("Fire1"))
+        {
+            MeleeAttack();
         }
     }
 
@@ -110,5 +117,38 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
 
+    }
+
+    public void TakeDamage(float damage) 
+    {
+        baseStats.CurrentHealth -= damage;
+        if (baseStats.CurrentHealth <= 0f)
+        {
+            OnDeath(gameObject);
+        }
+    }
+
+    private void OnDeath(GameObject death) 
+    {
+        Destroy(death);
+    }
+
+    private void MeleeAttack() 
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, attackRadius);
+
+        // Deal damage to enemies found
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag("Enemy"))
+            {
+                Enemy enemy = collider.GetComponent<Enemy>();
+                if (enemy != null)
+                {
+                    enemy.TakeDamage(baseStats.Attack);
+                    Debug.Log(enemy.stats.CurrentHealth);
+                }
+            }
+        }
     }
 }
