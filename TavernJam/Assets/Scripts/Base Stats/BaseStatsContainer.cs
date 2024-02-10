@@ -5,6 +5,7 @@ public class BaseStatsContainer : ScriptableObject
 {
     public float Attack;
     public float MaxHealth;
+    public float CurrentHealth;
     public float Speed;
     public float dashSpeed;
     public float dashCooldown;

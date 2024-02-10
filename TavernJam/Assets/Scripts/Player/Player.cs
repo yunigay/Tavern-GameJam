@@ -8,6 +8,8 @@ public class Player : MonoBehaviour
     public BaseStatsContainer baseStats;
     public float fallMultiplier = 2.5f;
     public float lowJumpMultiplier = 2f;
+    public float attackRadius = 2f;
+
 
     public float dashDuration = 1.0f;
 
@@ -26,12 +28,18 @@ public class Player : MonoBehaviour
     private bool isGrounded;
     private LayerMask groundLayer;
     private Vector2 movement;
+
     private float groundCheckDistance = 0.2f;
+
+    private Enemy enemy;
+
+
     private void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         groundLayer = LayerMask.GetMask("Ground"); // Make sure to set the ground layer in Unity
+        baseStats.CurrentHealth = baseStats.MaxHealth;
     }
 
 
@@ -91,6 +99,10 @@ public class Player : MonoBehaviour
             {
                 Slide();
             }
+        }
+        if (Input.GetButtonDown("Fire1"))
+        {
+            MeleeAttack();
         }
     }
 
@@ -162,6 +174,7 @@ public class Player : MonoBehaviour
         canDash = true;
 
     }
+
     private void Slide()
     {
         if (isGrounded)
@@ -238,4 +251,48 @@ public class Player : MonoBehaviour
     }
 
   
+
+
+    public void TakeDamage(float damage) 
+    {
+        baseStats.CurrentHealth -= damage;
+        if (baseStats.CurrentHealth <= 0f)
+        {
+            OnDeath(gameObject);
+        }
+    }
+
+    private void OnDeath(GameObject death) 
+    {
+        Destroy(death);
+    }
+
+    private void MeleeAttack()
+    {
+        // Cast a ray from the mouse position
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
+
+        RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+
+        if (hit.collider != null)
+        {
+            // Check if the hit collider is an enemy
+            if (hit.collider.CompareTag("Enemy"))
+            {
+                Enemy enemy = hit.collider.GetComponent<Enemy>();
+
+                // Check if the enemy is within the attack radius
+                float distanceToEnemy = Vector2.Distance(transform.position, enemy.transform.position);
+
+                if (distanceToEnemy <= attackRadius)
+                {
+                    // Deal damage to the enemy
+                    enemy.TakeDamage(baseStats.Attack);
+                    Debug.Log(enemy.stats.CurrentHealth);
+                }
+            }
+        }
+    }
+
 }
