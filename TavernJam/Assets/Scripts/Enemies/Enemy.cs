@@ -14,7 +14,9 @@ public class Enemy : MonoBehaviour
     public Vector2 canDealMeleeDamage;
     public float stopDistance = 0.1f;
     private LayerMask groundLayer;
+    private LayerMask platformLayer;
     bool onGround = true;
+    bool onPlatform = true;
     protected float health;
     protected bool isInRange = false;
     protected bool canMelee = true;
@@ -34,22 +36,19 @@ public class Enemy : MonoBehaviour
     private bool runAway;
     private bool isChasing = true;
 
-
-
-
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         groundLayer = LayerMask.GetMask("Ground");
+        platformLayer = LayerMask.GetMask("Platform");
         stats.CurrentHealth = stats.MaxHealth;
-
-
     }
 
     protected virtual void Update()
     {
-        onGround = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer);
+        onGround = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer | platformLayer);
+        onPlatform = Physics2D.OverlapCircle(transform.position, 0.8f, platformLayer);
 
         if (onGround && isChasing)
         {
@@ -67,7 +66,6 @@ public class Enemy : MonoBehaviour
         if (runAway)
         {
             RunFromPlayer();
-         
         }
     }
 
@@ -83,41 +81,22 @@ public class Enemy : MonoBehaviour
 
         RaycastHit2D hit = Physics2D.Raycast(transform.position, chasingDirection, 3f, groundLayer);
 
-        if (hit.collider != null && onGround)
-        {
-            // Enemy is about to hit a wall, so jump
-            JumpToWall();
-        }
-
-
         float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
         if (distanceToPlayer <= stopDistance)
         {
             // Stop horizontal movement if the enemy is close enough to the player
             rb.velocity = new Vector2(0f, rb.velocity.y);
         }
-        if (hitNumber ==3)
+        if (hitNumber == 3)
         {
             runAway = true;
             isChasing = false;
         }
     }
 
-    private void JumpToWall()
-    {
-        // Check if the enemy is on the ground before jumping
-        if (onGround)
-        {
-            rb.AddForce(Vector2.up * stats.jumpForce, ForceMode2D.Impulse);
-            Debug.Log("Jumping to wall");
-        }
-    }
-
     protected void OnDeath(GameObject death)
     {
-
         Destroy(death);
-
     }
 
     public virtual void DisableEnemy()
@@ -146,13 +125,12 @@ public class Enemy : MonoBehaviour
                     Debug.Log(pHealth.baseStats.CurrentHealth);
                     canMelee = false;
                     hitNumber++;
-                  
+
                     StartCoroutine(MeleeCooldown());
                 }
             }
         }
     }
-
 
     public IEnumerator MeleeCooldown()
     {
@@ -165,14 +143,12 @@ public class Enemy : MonoBehaviour
         stats.CurrentHealth -= damage;
         if (stats.CurrentHealth <= 0f && !hasCreatedProjectile)
         {
-
             OnDeath(gameObject);
             Debug.Log(stats.CurrentHealth);
             if (haveProjectile)
             {
                 CreateProjectileOnDeath();
                 hasCreatedProjectile = true;
-
             }
         }
     }
@@ -185,20 +161,16 @@ public class Enemy : MonoBehaviour
             rb.AddForce(jumpDirection * stats.jumpForce, ForceMode2D.Impulse);
             Debug.Log("Jumping");
         }
-
     }
 
     private void CreateProjectileOnDeath()
     {
-
         GameObject bullet = Instantiate(projectile, transform.position, Quaternion.identity);
         bullet.GetComponent<Rigidbody2D>().position = transform.position;
-
     }
 
     private void RunFromPlayer()
     {
-
         haveProjectile = true;
 
         // Calculate the opposite direction from the player
@@ -206,7 +178,7 @@ public class Enemy : MonoBehaviour
 
         Vector2 runningDirection = new Vector2(oppositeDirection.x, 0);
         // Set the velocity to move away from the player
-        rb.velocity = runningDirection* stats.Speed;
+        rb.velocity = runningDirection * stats.Speed;
 
         if (rb.velocity.x < 0)
         {
@@ -218,8 +190,5 @@ public class Enemy : MonoBehaviour
             // Flip the sprite back when moving right
             transform.localScale = new Vector3(1, 1, 1);
         }
-    
     }
 }
-
-
