@@ -8,5 +8,6 @@ public class BaseStatsContainer : ScriptableObject
     public float Speed;
     public float dashSpeed;
     public float dashCooldown;
+    public float jumpForce;
 }
 
