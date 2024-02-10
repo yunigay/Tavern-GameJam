@@ -16,7 +16,6 @@ public class Enemy : MonoBehaviour
     private LayerMask groundLayer;
     private LayerMask platformLayer;
     bool onGround = true;
-    bool onPlatform = true;
     protected float health;
     protected bool isInRange = false;
     protected bool canMelee = true;
@@ -36,7 +35,7 @@ public class Enemy : MonoBehaviour
     private bool haveProjectile = false;
     private bool runAway;
     private bool isChasing = true;
-
+    public HealthComponent healthComponent;
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -49,7 +48,6 @@ public class Enemy : MonoBehaviour
     protected virtual void Update()
     {
         onGround = Physics2D.OverlapCircle(transform.position, 0.7f, groundLayer | platformLayer);
-        onPlatform = Physics2D.OverlapCircle(transform.position, 0.8f, platformLayer);
 
         if (onGround && isChasing)
         {
@@ -121,16 +119,14 @@ public class Enemy : MonoBehaviour
         {
             if (colliders[i].CompareTag("Player"))
             {
-                Player pHealth = colliders[i].GetComponent<Player>();
-                if (pHealth != null)
-                {
-                    pHealth.TakeDamage(stats.Attack);
-                    Debug.Log(pHealth.baseStats.CurrentHealth);
+
+                healthComponent = colliders[i].GetComponent<HealthComponent>();
+                healthComponent.ReceiveDamage(stats.Attack);
                     canMelee = false;
                     hitNumber++;
 
                     StartCoroutine(MeleeCooldown());
-                }
+                
             }
         }
     }
@@ -141,20 +137,20 @@ public class Enemy : MonoBehaviour
         canMelee = true;
     }
 
-    public void TakeDamage(float damage)
-    {
-        stats.CurrentHealth -= damage;
-        if (stats.CurrentHealth <= 0f && !hasCreatedProjectile)
-        {
-            OnDeath(gameObject);
-            Debug.Log(stats.CurrentHealth);
-            if (haveProjectile)
-            {
-                CreateProjectileOnDeath();
-                hasCreatedProjectile = true;
-            }
-        }
-    }
+    //public void TakeDamage(float damage)
+    //{
+    //    stats.CurrentHealth -= damage;
+    //    if (stats.CurrentHealth <= 0f && !hasCreatedProjectile)
+    //    {
+    //        OnDeath(gameObject);
+    //        Debug.Log(stats.CurrentHealth);
+    //        if (haveProjectile)
+    //        {
+    //            CreateProjectileOnDeath();
+    //            hasCreatedProjectile = true;
+    //        }
+    //    }
+    //}
 
     private void JumpToPlayer()
     {
