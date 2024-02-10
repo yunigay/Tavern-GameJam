@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
     public float fallMultiplier = 2.5f;
     public float lowJumpMultiplier = 2f;
 
-    public float dashDistance = 100.0f;
+    public float dashDistance = 2.0f;
     public float dashDuration = 1.0f;
     public float dashCooldown = 3f;
 
