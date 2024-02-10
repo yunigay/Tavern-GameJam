@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
     public float attackRadius = 2f;
 
 
-    public float dashDistance = 100.0f;
+    public float dashDistance = 2.0f;
     public float dashDuration = 1.0f;
     public float dashCooldown = 3f;
 
