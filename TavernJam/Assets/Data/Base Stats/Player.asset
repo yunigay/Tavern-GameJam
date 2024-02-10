@@ -15,6 +15,7 @@ MonoBehaviour:
   Attack: 0
   MaxHealth: 0
   Speed: 10
-  dashSpeed: 0
-  dashCooldown: 0
+  dashSpeed: 40
+  dashCooldown: 3
   jumpForce: 8
+  CurrentHealth: 0
