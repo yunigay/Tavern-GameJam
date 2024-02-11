@@ -34,7 +34,6 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private bool hasCreatedProjectile = false;
     float playerHealthCache;
-    private int hitNumber;
     public GameObject projectile;
     private bool haveProjectile = false;
     public bool runAway;
@@ -43,7 +42,6 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private Color gizmosColor = Color.red;  // Color for the Gizmos sphere
 
-    private Transform newLookAtTarget;
     public CinemachineVirtualCamera virtualCamera;
 
     private SoundManger soundManager;
@@ -75,10 +73,7 @@ public class Enemy : MonoBehaviour
         {
             MoveToPlayer();
         }
-        if (!onGround && isChasing && !canJump)
-        {
-            SlightAerialMovement();
-        }
+      
         if (canJump)
         {
             JumpToPlayer();
@@ -125,23 +120,10 @@ public class Enemy : MonoBehaviour
         }
         else 
         {
-            rb.velocity = new Vector2(0.3f, 2.0f);
+            rb.velocity = new Vector2(1.5f, 2.5f);
         }
     }
-    protected void SlightAerialMovement()
-    {
-        Vector2 direction = (player.transform.position - transform.position).normalized;
 
-        // Set only the horizontal component of the chasingDirection
-        chasingDirection = new Vector2(direction.x, 0f);
-
-        // Set the horizontal velocity
-        rb.velocity += chasingDirection * 0.8f;
-
-
-        // Flip the enemy based on its velocity
-        FlipEnemy();
-    }
     private bool IsGroundedOnSides()
     {
         // Get the bounds of the player's collider

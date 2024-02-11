@@ -55,7 +55,9 @@ public class Player : MonoBehaviour
     private bool isJumping = false;
     private bool canDash = true;
     private bool isGrounded;
+    private bool isOnPlatform;
     private LayerMask groundLayer;
+    private LayerMask platformLayer;
     private Vector2 movement;
 
     private float groundCheckDistance = 0.8f;
@@ -80,6 +82,7 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         groundLayer = LayerMask.GetMask("Ground"); // Make sure to set the ground layer in Unity
+        platformLayer = LayerMask.GetMask("Platform"); // Make sure to set the ground layer in Unity
         SwitchForm(PlayerForm.Big);
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
     }
@@ -109,6 +112,7 @@ public class Player : MonoBehaviour
 
         // Check if the player is grounded
         isGrounded = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer);
+        isOnPlatform = Physics2D.OverlapCircle(transform.position, 0.8f, platformLayer);
         // Handle player input
         horizontalInput = Input.GetAxis("Horizontal");
         FlipPlayer(horizontalInput);
@@ -127,16 +131,16 @@ public class Player : MonoBehaviour
                 StartCoroutine(Dash(horizontalInput));
             }
             // Jumping
-            if (isGrounded && Input.GetButtonDown("Jump"))
+            if (isGrounded && Input.GetButtonDown("Jump") || isOnPlatform && Input.GetButtonDown("Jump"))
             {
                 Jump();
             }
 
-            if (isGrounded)
+            if (isGrounded || isOnPlatform)
             {
                 isJumping = false;
             }
-            else if (!isGrounded && !isDashing && !isSliding && !isAttacking && !isDying)
+            else if (!isGrounded && !isDashing && !isSliding && !isAttacking && !isDying && !isOnPlatform)
             {
                 if (!stateInfo.IsName("Dash"))
                     animator.Play("Jump");
@@ -178,7 +182,7 @@ public class Player : MonoBehaviour
         {
             movement = new Vector2(horizontalInput * baseStats.Speed, rb.velocity.y);
             rb.velocity = movement;
-            if (isGrounded && !isJumping && !isSliding && !isAttacking && !isDying)
+            if ((isGrounded || isOnPlatform) && !isJumping && !isSliding && !isAttacking && !isDying)
             {
                 if (rb.velocity.magnitude == 0 || horizontalInput == 0)
                 {
@@ -231,7 +235,7 @@ public class Player : MonoBehaviour
 
         // Stop the dash and prevent upward movement
         isDashing = false;
-        if (isGrounded)
+        if (isGrounded || isOnPlatform)
         {
             isSliding = true;
         }
@@ -245,7 +249,7 @@ public class Player : MonoBehaviour
 
     private void Slide(float horizontalInput)
     {
-        if (isGrounded)
+        if (isGrounded || isOnPlatform)
         {
 
             // Gradually reduce velocity during the sliding state
