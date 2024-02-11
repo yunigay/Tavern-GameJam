@@ -279,6 +279,7 @@ public class Player : MonoBehaviour
     public void TakeDamage(float damage) 
     {
         health.ReceiveDamage(damage);
+       
 
         // Check for form switch based on health
         if (health.GetCurrentHealth() <= 0f)
@@ -288,10 +289,13 @@ public class Player : MonoBehaviour
         else if (health.GetCurrentHealth() <= smallFormStats.MaxHealth && currentForm != PlayerForm.Small)
         {
             SwitchForm(PlayerForm.Small);
+            health.SetMaxHealth(smallFormStats.MaxHealth);
+
         }
         else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && currentForm != PlayerForm.Medium)
         {
             SwitchForm(PlayerForm.Medium);
+            health.SetMaxHealth(mediumFormStats.MaxHealth);
         }
     }
 

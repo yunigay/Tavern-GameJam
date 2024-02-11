@@ -35,6 +35,11 @@ public class HealthComponent : MonoBehaviour
         }
     }
 
+    public void SetMaxHealth(float Maxhealth_)
+    {
+        MaxHealth = Maxhealth_;
+    }
+
     public void ReceiveDamage(float damage)
     {
         SetCurrentHealth(CurrentHealth - damage);
@@ -43,5 +48,10 @@ public class HealthComponent : MonoBehaviour
     public float GetCurrentHealth()
     {
         return CurrentHealth;
+    }
+
+    public float GetMaxHealth()
+    {
+        return MaxHealth;
     }
 }

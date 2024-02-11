@@ -31,7 +31,7 @@ public class Enemy : MonoBehaviour
     private float jumpCooldown = 5f;
     [SerializeField]
     private bool hasCreatedProjectile = false;
-
+    float playerHealthCache;
     private int hitNumber;
     public GameObject projectile;
     private bool haveProjectile = false;
@@ -39,6 +39,15 @@ public class Enemy : MonoBehaviour
     private bool isChasing = true;
     private HealthComponent healthComponent;
     AnimatorStateInfo stateInfo;
+    [SerializeField]
+    private Color gizmosColor = Color.red;  // Color for the Gizmos sphere
+
+    private void OnDrawGizmosSelected()
+    {
+        // Draw a wire sphere to represent the attack range
+        Gizmos.color = gizmosColor;
+        Gizmos.DrawWireSphere(transform.position, meleeCirlceRadius * 3);
+    }
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -100,11 +109,6 @@ public class Enemy : MonoBehaviour
                 // Stop horizontal movement if the enemy is close enough to the player
                 rb.velocity = new Vector2(0f, rb.velocity.y);
             }
-            if (hitNumber == 3)
-            {
-                runAway = true;
-                isChasing = false;
-            }
         }
     }
 
@@ -133,27 +137,44 @@ public class Enemy : MonoBehaviour
             if (colliders[i].CompareTag("Player"))
             {
                 playerReference = colliders[i].GetComponent<Player>();
-                playerReference.TakeDamage(stats.Attack);
-                    canMelee = false;
-                    hitNumber++;
+                playerHealthCache = playerReference.health.GetMaxHealth();
+
+                // Deal damage to the player
+                canMelee = false;
                 isAttacking = true;
                 animator.Play("BugAttack");
 
                 // Get the length of the BugAttack animation
                 float animationLength = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
-                Debug.Log(animationLength);
+
                 // Start a coroutine to reset isAttacking after the animation length
                 StartCoroutine(ResetIsAttackingAfterAnimation(animationLength + 0.3f));
 
                 StartCoroutine(MeleeCooldown());
 
+                // Check if the player's form has changed
+         
             }
         }
     }
     private IEnumerator ResetIsAttackingAfterAnimation(float delay)
     {
-        yield return new WaitForSeconds(delay);
-        isAttacking = false;
+         yield return new WaitForSeconds(delay);
+    isAttacking = false;
+
+    // Check if the player is still within the melee circle radius
+    float distanceToPlayer = Vector2.Distance(transform.position, playerReference.transform.position);
+    if (distanceToPlayer <= meleeCirlceRadius * 3)
+    {
+        // Deal damage to the player
+        playerReference.TakeDamage(stats.Attack);
+    }
+        if (playerReference.health.GetMaxHealth() != playerHealthCache)
+        {
+            // Player's form has changed, so the enemy should run away
+            runAway = true;
+            isChasing = false;
+        }
     }
 
     public IEnumerator MeleeCooldown()
