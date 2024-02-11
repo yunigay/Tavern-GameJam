@@ -6,6 +6,7 @@ public class Enemy : MonoBehaviour
 {
     public BaseStatsContainer stats;
     public GameObject player;
+    private Player playerReference;
     protected Rigidbody2D rb;
     protected Animator animator;
     protected bool canMove;
@@ -35,11 +36,12 @@ public class Enemy : MonoBehaviour
     private bool haveProjectile = false;
     private bool runAway;
     private bool isChasing = true;
-    public HealthComponent healthComponent;
+    private HealthComponent healthComponent;
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        healthComponent = GetComponent<HealthComponent>();
         groundLayer = LayerMask.GetMask("Ground");
         platformLayer = LayerMask.GetMask("Platform");
         stats.CurrentHealth = stats.MaxHealth;
@@ -120,8 +122,8 @@ public class Enemy : MonoBehaviour
             if (colliders[i].CompareTag("Player"))
             {
 
-                healthComponent = colliders[i].GetComponent<HealthComponent>();
-                healthComponent.ReceiveDamage(stats.Attack);
+                playerReference = colliders[i].GetComponent<Player>();
+                playerReference.TakeDamage(stats.Attack);
                     canMelee = false;
                     hitNumber++;
 

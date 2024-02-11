@@ -38,7 +38,6 @@ public class HealthComponent : MonoBehaviour
     public void ReceiveDamage(float damage)
     {
         SetCurrentHealth(CurrentHealth - damage);
-        Debug.Log(CurrentHealth);
     }
 
     public float GetCurrentHealth()

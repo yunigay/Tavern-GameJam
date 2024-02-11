@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5849452340913652059}
   - component: {fileID: 5849452340913652057}
   - component: {fileID: 5849452340913652058}
+  - component: {fileID: 1486678207}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -130,6 +131,7 @@ MonoBehaviour:
   meleeCooldown: 5
   hasCreatedProjectile: 0
   projectile: {fileID: 0}
+  healthComponent: {fileID: 0}
 --- !u!61 &5849452340913652058
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -156,3 +158,18 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &1486678207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5849452340913652055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c964889a1f52b1b46bda29b15a170726, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentHealth: 0
+  MaxHealth: 0
+  baseStats: {fileID: 11400000, guid: 3172e0e44e7caf54a82d100af80707b4, type: 2}
