@@ -31,8 +31,12 @@ public class HealthComponent : MonoBehaviour
         CurrentHealth = Mathf.Clamp(CurrentHealth_, 0.0f, MaxHealth);
         if (CurrentHealth <= 0.0f)
         {
-            OnDeath?.Invoke(gameObject);
         }
+    }
+
+    public void SetMaxHealth(float Maxhealth_)
+    {
+        MaxHealth = Maxhealth_;
     }
 
     public void ReceiveDamage(float damage)
@@ -43,5 +47,10 @@ public class HealthComponent : MonoBehaviour
     public float GetCurrentHealth()
     {
         return CurrentHealth;
+    }
+
+    public float GetMaxHealth()
+    {
+        return MaxHealth;
     }
 }

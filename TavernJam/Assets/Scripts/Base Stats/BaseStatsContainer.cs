@@ -4,6 +4,7 @@ using UnityEngine;
 public class BaseStatsContainer : ScriptableObject
 {
     public float Attack;
+    public float attackSpeed;
     public float MaxHealth;
     public float CurrentHealth;
     public float Speed;
