@@ -65,9 +65,18 @@ public class Player : MonoBehaviour
     float horizontalInput;
     float meleePointOffset = 1.5f;
 
+    private SoundManger soundManager;
+    public AudioClip takeDamageSound; // Assign your sound effect in the Unity Editor or through code
+    public AudioClip throwAttackSound; // Assign your sound effect in the Unity Editor or through code
+    public AudioClip deathSound; // Assign your sound effect in the Unity Editor or through code
+    public AudioClip pickUpSound; // Assign your sound effect in the Unity Editor or through code
+    public AudioClip jumpSound; // Assign your sound effect in the Unity Editor or through code
+    public AudioClip dashSound; // Assign your sound effect in the Unity Editor or through code
+
 
     private void Start()
     {
+        soundManager = GetComponent<SoundManger>();
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         groundLayer = LayerMask.GetMask("Ground"); // Make sure to set the ground layer in Unity
@@ -78,6 +87,7 @@ public class Player : MonoBehaviour
     {
         if (collision.collider.CompareTag("Bread"))
         {
+            soundManager.PlaySoundEffect(pickUpSound);
             if (health.GetCurrentHealth() <= smallFormStats.MaxHealth)
             {
                 SwitchForm(PlayerForm.Medium);
@@ -182,7 +192,7 @@ public class Player : MonoBehaviour
 
     private void Jump()
     {
-
+        soundManager.PlaySoundEffect(jumpSound, 0.7f);
         isJumping = true;
         rb.velocity = new Vector2(rb.velocity.x, baseStats.jumpForce);
     }
@@ -210,6 +220,7 @@ public class Player : MonoBehaviour
         // Set velocity for the dash
         rb.velocity = new Vector2(dashDirection.x * baseStats.dashSpeed, verticalInput * 300f / baseStats.dashSpeed);
         animator.Play("Dash");
+        soundManager.PlaySoundEffect(dashSound, 0.5f);
 
         // Wait for the dash duration
         yield return new WaitForSeconds(dashDuration);
@@ -316,7 +327,7 @@ public class Player : MonoBehaviour
     public void TakeDamage(float damage)
     {
         health.ReceiveDamage(damage);
-
+        soundManager.PlaySoundEffect(takeDamageSound);
 
         // Check for form switch based on health
         if (health.GetCurrentHealth() <= 0f)
@@ -342,6 +353,8 @@ public class Player : MonoBehaviour
         Input.ResetInputAxes();
         // Play the specified animation
         animator.Play("Death");
+        soundManager.PlaySoundEffect(deathSound);
+
 
         // Get the length of the specified animation
         float animationLength = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
@@ -430,6 +443,7 @@ public class Player : MonoBehaviour
 
         // Instantiate a bullet
         GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+        soundManager.PlaySoundEffect(throwAttackSound);
 
         // Get the bullet component and set its damage
         Bullet bulletComponent = bullet.GetComponent<Bullet>();

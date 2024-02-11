@@ -46,6 +46,9 @@ public class Enemy : MonoBehaviour
     private Transform newLookAtTarget;
     public CinemachineVirtualCamera virtualCamera;
 
+    private SoundManger soundManager;
+    public AudioClip takeDamageSound; // Assign your sound effect in the Unity Editor or through code
+
     private void OnDrawGizmosSelected()
     {
         // Draw a wire sphere to represent the attack range
@@ -54,6 +57,7 @@ public class Enemy : MonoBehaviour
     }
     protected virtual void Awake()
     {
+        soundManager = GetComponent<SoundManger>();
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         healthComponent = GetComponent<HealthComponent>();
@@ -183,13 +187,18 @@ public class Enemy : MonoBehaviour
             {
                 runAway = true;
                 isChasing = false;
-                virtualCamera.Follow = transform;
+                StartCoroutine(WaitForDeath());
             }
         }
    
         isAttacking = false;
     }
 
+    public IEnumerator WaitForDeath()
+    {
+        yield return new WaitForSeconds(1.5f);
+        virtualCamera.Follow = transform;
+    }
     public IEnumerator MeleeCooldown()
     {
         yield return new WaitForSeconds(meleeCooldown);
@@ -199,6 +208,7 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(float damage)
     {
         healthComponent.ReceiveDamage(damage);
+        soundManager.PlaySoundEffect(takeDamageSound);
         Debug.Log(healthComponent.GetCurrentHealth());
         if (healthComponent.GetCurrentHealth() <= 0f && !hasCreatedProjectile)
         {

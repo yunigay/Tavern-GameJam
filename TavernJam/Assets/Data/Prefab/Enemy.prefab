@@ -132,8 +132,10 @@ MonoBehaviour:
   meleeCooldown: 2.5
   hasCreatedProjectile: 0
   projectile: {fileID: 0}
+  runAway: 0
   gizmosColor: {r: 1, g: 0, b: 0, a: 1}
   virtualCamera: {fileID: 0}
+  takeDamageSound: {fileID: 8300000, guid: 8105fcadf15d61e47acd2762e3a0f09f, type: 3}
 --- !u!61 &5849452340913652058
 BoxCollider2D:
   m_ObjectHideFlags: 0
