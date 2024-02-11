@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2844524153847941134}
   - component: {fileID: 2844524153847941123}
   - component: {fileID: 2844524153847941124}
+  - component: {fileID: 9047883035421691522}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -37,6 +38,7 @@ Transform:
   - {fileID: 2844524155207637864}
   - {fileID: 2844524154930256405}
   - {fileID: 2844524154906958227}
+  - {fileID: 129585070649793930}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -162,7 +164,15 @@ MonoBehaviour:
   fallMultiplier: 2.5
   lowJumpMultiplier: 2
   attackRadius: 2
+  bulletPrefab: {fileID: 3030735716671427733, guid: 59a6dbccaf30b6442bdf878f966eb4ef, type: 3}
+  bulletSpawnPoint: {fileID: 129585070649793930}
   dashDuration: 0.2
+  takeDamageSound: {fileID: 8300000, guid: b13dcb8a2fcf8684183189099174d587, type: 3}
+  throwAttackSound: {fileID: 8300000, guid: 5e42659a60eabe3489c777525911c057, type: 3}
+  deathSound: {fileID: 8300000, guid: a6a518cfc311a6c41b5d0f448ceba740, type: 3}
+  pickUpSound: {fileID: 8300000, guid: 7a58b0ddf4d48e4458f1f87e0f558e6b, type: 3}
+  jumpSound: {fileID: 8300000, guid: 4f1f603726642ce4d81a25cdfd75c272, type: 3}
+  dashSound: {fileID: 8300000, guid: 6b062e5b3f609e945a2bc7a21f1fd05b, type: 3}
 --- !u!95 &2844524153847941123
 Animator:
   serializedVersion: 5
@@ -198,6 +208,18 @@ MonoBehaviour:
   CurrentHealth: 0
   MaxHealth: 0
   baseStats: {fileID: 11400000, guid: 2fa76c0c3b1fe764986d8e0b8bcc32ba, type: 2}
+--- !u!114 &9047883035421691522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2844524153847941133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cf36fefcf7caf74793ac5beb1f4a817, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2844524154906958226
 GameObject:
   m_ObjectHideFlags: 0
@@ -507,9 +529,40 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.5625, y: 1.5625}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &4136533066936503221
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 129585070649793930}
+  m_Layer: 0
+  m_Name: Shoot point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &129585070649793930
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4136533066936503221}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.72, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2844524153847941122}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
