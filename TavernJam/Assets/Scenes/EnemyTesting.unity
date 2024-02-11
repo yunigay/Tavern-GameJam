@@ -324,7 +324,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2844524153847941120, guid: fb1f368270359da478d5bae58f7e2a23, type: 3}
       propertyPath: m_BodyType
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2844524153847941122, guid: fb1f368270359da478d5bae58f7e2a23, type: 3}
       propertyPath: m_RootOrder
@@ -332,11 +332,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2844524153847941122, guid: fb1f368270359da478d5bae58f7e2a23, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.15
+      value: -1.23
       objectReference: {fileID: 0}
     - target: {fileID: 2844524153847941122, guid: fb1f368270359da478d5bae58f7e2a23, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.25
+      value: -1.25
       objectReference: {fileID: 0}
     - target: {fileID: 2844524153847941122, guid: fb1f368270359da478d5bae58f7e2a23, type: 3}
       propertyPath: m_LocalPosition.z
@@ -722,3 +722,68 @@ PrefabInstance:
     m_RemovedComponents:
     - {fileID: 1147455912538245038, guid: f999958e386dc5b4d9331a7664b6e387, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: f999958e386dc5b4d9331a7664b6e387, type: 3}
+--- !u!1001 &4555920337911247527
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4555920337260441960, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_Name
+      value: EnemySpawn
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_RootOrder
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -9.83
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441973, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4555920337260441975, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1596902177}
+    - target: {fileID: 4555920337260441975, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
+      propertyPath: enemyPrefab
+      value: 
+      objectReference: {fileID: 781554455}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ef1f2bcf49062d741aa50c3e28f2e2da, type: 3}
