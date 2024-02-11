@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 252d6c1b8c104e743bc6c6c7cc559574, type: 3}
   m_Name: SmallStats
   m_EditorClassIdentifier: 
-  Attack: 0
-  MaxHealth: 0
-  CurrentHealth: 0
+  Attack: 20
+  MaxHealth: 40
+  CurrentHealth: 40
   Speed: 20
   dashSpeed: 60
   dashCooldown: 1
