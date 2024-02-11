@@ -45,6 +45,7 @@ public class Enemy : MonoBehaviour
     private Vector3 spawnPos;
     public EnemySpawn spawn;
 
+    private bool onSpawn = false;
     private Transform newLookAtTarget;
     public CinemachineVirtualCamera virtualCamera;
 
@@ -97,6 +98,11 @@ public class Enemy : MonoBehaviour
         if (runAway)
         {
             RunFromPlayer();
+        }
+        if (onSpawn)
+        {
+            DestroyOnSpawn();
+
         }
     }
 
@@ -318,6 +324,7 @@ public class Enemy : MonoBehaviour
 
         // Set the velocity to move only horizontally away from the player
         rb.velocity = newVelocity;
+        onSpawn = true;
     }
 
     private void FlipEnemy()
@@ -331,6 +338,19 @@ public class Enemy : MonoBehaviour
         {
             // Flip the sprite when moving left
             transform.localScale = new Vector3(-1, 1, 1);
+        }
+    }
+    private void DestroyOnSpawn()
+    {
+        // Check if the enemy's x position is within a range of 2 units greater or 2 units less than the spawn position's x position
+        if (transform.position.x >= spawnPos.x - 2f && transform.position.x <= spawnPos.x + 2f)
+        {
+            // Destroy the current enemy
+            Destroy(gameObject);
+            Debug.Log("dead");
+
+            // Optionally instantiate a new enemy here if needed
+            // GameObject newEnemy = Instantiate(gameObject, spawnPos, Quaternion.identity);
         }
     }
 }
