@@ -137,20 +137,19 @@ public class Enemy : MonoBehaviour
         canMelee = true;
     }
 
-    //public void TakeDamage(float damage)
-    //{
-    //    stats.CurrentHealth -= damage;
-    //    if (stats.CurrentHealth <= 0f && !hasCreatedProjectile)
-    //    {
-    //        OnDeath(gameObject);
-    //        Debug.Log(stats.CurrentHealth);
-    //        if (haveProjectile)
-    //        {
-    //            CreateProjectileOnDeath();
-    //            hasCreatedProjectile = true;
-    //        }
-    //    }
-    //}
+    public void TakeDamage(float damage)
+    {
+        healthComponent.ReceiveDamage(damage);
+        //if (stats.CurrentHealth <= 0f && !hasCreatedProjectile)
+        //{
+        //    OnDeath(gameObject);
+        //    if (haveProjectile)
+        //    {
+        //        CreateProjectileOnDeath();
+        //        hasCreatedProjectile = true;
+        //    }
+        //}
+    }
 
     private void JumpToPlayer()
     {
