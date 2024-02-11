@@ -31,7 +31,7 @@ public class Enemy : MonoBehaviour
     private float meleeCirlceRadius = 1.0f;
     [SerializeField]
     private float meleeCooldown = 5f;
-    private float jumpCooldown = 0.2f;
+    private float jumpCooldown = 2f;
     [SerializeField]
     private bool hasCreatedProjectile = false;
     float playerHealthCache;
