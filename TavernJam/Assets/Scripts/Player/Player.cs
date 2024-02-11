@@ -318,8 +318,7 @@ public class Player : MonoBehaviour
                 if (distanceToEnemy <= attackRadius)
                 {
                     // Deal damage to the enemy
-                    enemy.TakeDamage(baseStats.Attack);
-                    Debug.Log(enemy.stats.CurrentHealth);
+                 enemy.TakeDamage(baseStats.Attack);
                 }
             }
         }

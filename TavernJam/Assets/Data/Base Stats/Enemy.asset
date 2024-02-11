@@ -18,4 +18,4 @@ MonoBehaviour:
   Speed: 3
   dashSpeed: 0
   dashCooldown: 0
-  jumpForce: 15
+  jumpForce: 10
