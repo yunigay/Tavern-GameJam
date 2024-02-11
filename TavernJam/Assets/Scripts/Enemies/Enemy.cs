@@ -42,6 +42,8 @@ public class Enemy : MonoBehaviour
     private HealthComponent healthComponent;
     [SerializeField]
     private Color gizmosColor = Color.red;  // Color for the Gizmos sphere
+    private Vector3 spawnPos;
+    public EnemySpawn spawn;
 
     private Transform newLookAtTarget;
     public CinemachineVirtualCamera virtualCamera;
@@ -65,6 +67,7 @@ public class Enemy : MonoBehaviour
         groundLayer = LayerMask.GetMask("Ground");
         platformLayer = LayerMask.GetMask("Platform");
         stats.CurrentHealth = stats.MaxHealth;
+        spawnPos = transform.position;
     }
 
     private void Update()
@@ -74,6 +77,7 @@ public class Enemy : MonoBehaviour
         if (onGround && isChasing)
         {
             MoveToPlayer();
+
         }
         if (!onGround && isChasing && !canJump)
         {
@@ -114,6 +118,8 @@ public class Enemy : MonoBehaviour
 
                 // Flip the enemy based on its velocity
                 FlipEnemy();
+                Debug.Log("Chasing");
+                Debug.Log(transform.position);
 
             }
             float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
@@ -121,6 +127,7 @@ public class Enemy : MonoBehaviour
             {
                 // Stop horizontal movement if the enemy is close enough to the player
                 rb.velocity = new Vector2(0f, rb.velocity.y);
+                Debug.Log("Chasing2");
             }
         }
         else 
@@ -302,18 +309,15 @@ public class Enemy : MonoBehaviour
         haveProjectile = true;
         isRunning = true;
         // Calculate the opposite direction from the player
-        Vector2 oppositeDirection = -(player.transform.position - transform.position).normalized;
+        Vector2 direction = (spawnPos - transform.position).normalized;
 
-        Vector2 runningDirection = new Vector2(oppositeDirection.x, 0);
-        // Set the velocity to move away from the player
-        // Preserve the existing vertical velocity
+        // Set the velocity to move only horizontally away from the player
+        float clampedXVelocity = Mathf.Clamp(direction.x * stats.Speed * 2, -stats.Speed * 2, stats.Speed * 2);
         float clampedYVelocity = Mathf.Clamp(rb.velocity.y, -stats.Speed * 2, stats.Speed * 2);
-        Vector2 newVelocity = new Vector2(runningDirection.x * stats.Speed * 2, clampedYVelocity);
+        Vector2 newVelocity = new Vector2(clampedXVelocity, clampedYVelocity);
 
-        // Set the velocity to move away from the player
+        // Set the velocity to move only horizontally away from the player
         rb.velocity = newVelocity;
-
-
     }
 
     private void FlipEnemy()
