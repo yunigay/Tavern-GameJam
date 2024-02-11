@@ -323,7 +323,7 @@ public class Player : MonoBehaviour
     {
         health.ReceiveDamage(damage);
         soundManager.PlaySoundEffect(takeDamageSound);
-
+        Debug.Log(health.GetCurrentHealth());
         // Check for form switch based on health
         if (health.GetCurrentHealth() <= 0f)
         {
