@@ -68,6 +68,7 @@ public class Player : MonoBehaviour
         isGrounded = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer);
         // Handle player input
         float horizontalInput = Input.GetAxis("Horizontal");
+        FlipPlayer(horizontalInput);
         // Move the player
 
 
@@ -214,6 +215,8 @@ public class Player : MonoBehaviour
 
                 // Delay for the "getting up" period
                 float gettingUpDelay = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+                Debug.Log(gettingUpDelay);
+
                 StartCoroutine(GettingUp(gettingUpDelay));
             }
         }
@@ -282,11 +285,11 @@ public class Player : MonoBehaviour
         {
             OnDeath(gameObject);
         }
-        else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && currentForm != PlayerForm.Small)
+        else if (health.GetCurrentHealth() <= smallFormStats.MaxHealth && currentForm != PlayerForm.Small)
         {
             SwitchForm(PlayerForm.Small);
         }
-        else if (health.GetCurrentHealth() <= bigFormStats.MaxHealth && currentForm != PlayerForm.Medium)
+        else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && currentForm != PlayerForm.Medium)
         {
             SwitchForm(PlayerForm.Medium);
         }
@@ -345,6 +348,20 @@ public class Player : MonoBehaviour
                 baseStats = smallFormStats;
                 animator.runtimeAnimatorController = smallFormAnimator.runtimeAnimatorController;
                 break;
+        }
+    }
+
+    private void FlipPlayer(float horizontalInput)
+    {
+        if (horizontalInput < 0)
+        {
+            // Face left
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+        else if (horizontalInput > 0)
+        {
+            // Face right
+            transform.localScale = new Vector3(-1, 1, 1);
         }
     }
 

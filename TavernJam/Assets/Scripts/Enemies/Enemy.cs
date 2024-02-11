@@ -20,6 +20,7 @@ public class Enemy : MonoBehaviour
     protected float health;
     protected bool isInRange = false;
     protected bool canMelee = true;
+    protected bool isAttacking = false;
     bool canJump = true;
     [SerializeField]
     private float meleePointOffset = 1.0f;
@@ -37,6 +38,7 @@ public class Enemy : MonoBehaviour
     private bool runAway;
     private bool isChasing = true;
     private HealthComponent healthComponent;
+    AnimatorStateInfo stateInfo;
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -49,8 +51,10 @@ public class Enemy : MonoBehaviour
 
     protected virtual void Update()
     {
-        onGround = Physics2D.OverlapCircle(transform.position, 0.7f, groundLayer | platformLayer);
+        Debug.Log(isAttacking);
 
+        stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        onGround = Physics2D.OverlapCircle(transform.position, 0.7f, groundLayer | platformLayer);
         if (onGround && isChasing)
         {
             MoveToPlayer();
@@ -74,26 +78,33 @@ public class Enemy : MonoBehaviour
 
     protected void MoveToPlayer()
     {
-        Vector2 direction = (player.transform.position - transform.position).normalized;
-
-        // Set only the horizontal component of the chasingDirection
-        chasingDirection = new Vector2(direction.x, 0f);
-
-        // Set the horizontal velocity
-        rb.velocity = chasingDirection * stats.Speed;
-
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, chasingDirection, 3f, groundLayer);
-
-        float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
-        if (distanceToPlayer <= stopDistance)
+        if(!isAttacking)
         {
-            // Stop horizontal movement if the enemy is close enough to the player
-            rb.velocity = new Vector2(0f, rb.velocity.y);
-        }
-        if (hitNumber == 3)
-        {
-            runAway = true;
-            isChasing = false;
+                animator.Play("BugRun");
+            Vector2 direction = (player.transform.position - transform.position).normalized;
+
+            // Set only the horizontal component of the chasingDirection
+            chasingDirection = new Vector2(direction.x, 0f);
+
+            // Set the horizontal velocity
+            rb.velocity = chasingDirection * stats.Speed;
+
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, chasingDirection, 3f, groundLayer);
+
+            // Flip the enemy based on its velocity
+            FlipEnemy();
+
+            float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
+            if (distanceToPlayer <= stopDistance)
+            {
+                // Stop horizontal movement if the enemy is close enough to the player
+                rb.velocity = new Vector2(0f, rb.velocity.y);
+            }
+            if (hitNumber == 3)
+            {
+                runAway = true;
+                isChasing = false;
+            }
         }
     }
 
@@ -121,16 +132,28 @@ public class Enemy : MonoBehaviour
         {
             if (colliders[i].CompareTag("Player"))
             {
-
                 playerReference = colliders[i].GetComponent<Player>();
                 playerReference.TakeDamage(stats.Attack);
                     canMelee = false;
                     hitNumber++;
+                isAttacking = true;
+                animator.Play("BugAttack");
 
-                    StartCoroutine(MeleeCooldown());
-                
+                // Get the length of the BugAttack animation
+                float animationLength = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+                Debug.Log(animationLength);
+                // Start a coroutine to reset isAttacking after the animation length
+                StartCoroutine(ResetIsAttackingAfterAnimation(animationLength + 0.3f));
+
+                StartCoroutine(MeleeCooldown());
+
             }
         }
+    }
+    private IEnumerator ResetIsAttackingAfterAnimation(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        isAttacking = false;
     }
 
     public IEnumerator MeleeCooldown()
@@ -180,6 +203,7 @@ public class Enemy : MonoBehaviour
 
     private void RunFromPlayer()
     {
+        animator.Play("BugRunBread");
         haveProjectile = true;
 
         // Calculate the opposite direction from the player
@@ -201,5 +225,17 @@ public class Enemy : MonoBehaviour
         }
     }
 
-   
+    private void FlipEnemy()
+    {
+        if (rb.velocity.x < 0)
+        {
+            // Flip the sprite when moving right
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+        else if (rb.velocity.x > 0)
+        {
+            // Flip the sprite when moving left
+            transform.localScale = new Vector3(-1, 1, 1);
+        }
+    }
 }
