@@ -122,7 +122,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: 3172e0e44e7caf54a82d100af80707b4, type: 2}
-  player: {fileID: 0}
+  player: {fileID: 2844524153847941133, guid: fb1f368270359da478d5bae58f7e2a23, type: 3}
   chasingDirection: {x: 0, y: 0}
   canDealMeleeDamage: {x: 0, y: 0}
   stopDistance: 0.1
@@ -130,8 +130,7 @@ MonoBehaviour:
   meleeCirlceRadius: 1
   meleeCooldown: 5
   hasCreatedProjectile: 0
-  projectile: {fileID: 0}
-  healthComponent: {fileID: 0}
+  projectile: {fileID: 3030735716671427733, guid: 59a6dbccaf30b6442bdf878f966eb4ef, type: 3}
 --- !u!61 &5849452340913652058
 BoxCollider2D:
   m_ObjectHideFlags: 0
