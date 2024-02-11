@@ -30,7 +30,7 @@ public class Enemy : MonoBehaviour
     private float meleeCirlceRadius = 1.0f;
     [SerializeField]
     private float meleeCooldown = 5f;
-    private float jumpCooldown = 5f;
+    private float jumpCooldown = 0.3f;
     [SerializeField]
     private bool hasCreatedProjectile = false;
     float playerHealthCache;
@@ -54,6 +54,7 @@ public class Enemy : MonoBehaviour
         // Draw a wire sphere to represent the attack range
         Gizmos.color = gizmosColor;
         Gizmos.DrawWireSphere(transform.position, meleeCirlceRadius * 3);
+        Gizmos.DrawWireCube(GetComponent<Collider2D>().bounds.center, GetComponent<Collider2D>().bounds.size);
     }
     protected virtual void Awake()
     {
@@ -68,11 +69,15 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
-
+        IsGroundedOnSides();
         onGround = Physics2D.OverlapCircle(transform.position, 0.7f, groundLayer | platformLayer);
         if (onGround && isChasing)
         {
             MoveToPlayer();
+        }
+        if (!onGround && isChasing && !canJump)
+        {
+            SlightAerialMovement();
         }
         if (canJump)
         {
@@ -93,29 +98,74 @@ public class Enemy : MonoBehaviour
 
     protected void MoveToPlayer()
     {
-        if (!isAttacking)
+        if (IsGroundedOnSides())
         {
-            animator.Play("BugRun");
-            Vector2 direction = (player.transform.position - transform.position).normalized;
+            if (!isAttacking)
+            {
+                animator.Play("BugRun");
+                Vector2 direction = (player.transform.position - transform.position).normalized;
 
-            // Set only the horizontal component of the chasingDirection
-            chasingDirection = new Vector2(direction.x, 0f);
+                // Set only the horizontal component of the chasingDirection
+                chasingDirection = new Vector2(direction.x, 0f);
 
-            // Set the horizontal velocity
-            rb.velocity = chasingDirection * stats.Speed;
+                // Set the horizontal velocity
+                rb.velocity = chasingDirection * stats.Speed;
 
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, chasingDirection, 3f, groundLayer);
 
-            // Flip the enemy based on its velocity
-            FlipEnemy();
+                // Flip the enemy based on its velocity
+                FlipEnemy();
 
+            }
+            float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
+            if (distanceToPlayer <= stopDistance)
+            {
+                // Stop horizontal movement if the enemy is close enough to the player
+                rb.velocity = new Vector2(0f, rb.velocity.y);
+            }
         }
-        float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
-        if (distanceToPlayer <= stopDistance)
+        else 
         {
-            // Stop horizontal movement if the enemy is close enough to the player
-            rb.velocity = new Vector2(0f, rb.velocity.y);
+            rb.velocity = new Vector2(0.3f, 2.0f);
         }
+    }
+    protected void SlightAerialMovement()
+    {
+        Vector2 direction = (player.transform.position - transform.position).normalized;
+
+        // Set only the horizontal component of the chasingDirection
+        chasingDirection = new Vector2(direction.x, 0f);
+
+        // Set the horizontal velocity
+        rb.velocity += chasingDirection * 0.8f;
+
+
+        // Flip the enemy based on its velocity
+        FlipEnemy();
+    }
+    private bool IsGroundedOnSides()
+    {
+        // Get the bounds of the player's collider
+        Bounds bounds = GetComponent<Collider2D>().bounds;
+
+        // Define the positions for the raycasts
+        Vector2 top = new Vector2(bounds.center.x, bounds.max.y);
+        Vector2 middle = new Vector2(bounds.center.x, bounds.center.y);
+        Vector2 bottom = new Vector2(bounds.center.x, bounds.min.y);
+
+        // Calculate the direction based on the player's scale (facing direction)
+        float direction = transform.localScale.x < 0 ? 1f : -1f;
+
+        // Check if the player is not in contact with the ground on the sides
+        RaycastHit2D hitTop = Physics2D.Raycast(top, Vector2.right * direction, 0.7f, groundLayer);
+        RaycastHit2D hitMiddle = Physics2D.Raycast(middle, Vector2.right * direction, 0.7f, groundLayer);
+        RaycastHit2D hitBottom = Physics2D.Raycast(bottom, Vector2.right * direction, 0.7f, groundLayer);
+
+        // Visualize the raycasts
+        Debug.DrawLine(top, top + Vector2.right * direction * 0.7f, Color.red);
+        Debug.DrawLine(middle, middle + Vector2.right * direction * 0.7f, Color.green);
+        Debug.DrawLine(bottom, bottom + Vector2.right * direction * 0.7f, Color.blue);
+   
+        return (hitTop.collider == null) && (hitMiddle.collider == null) && (hitBottom.collider == null);
     }
 
     protected void OnDeath(GameObject death)
@@ -223,6 +273,7 @@ public class Enemy : MonoBehaviour
 
     private void JumpToPlayer()
     {
+
         if (player.transform.position.y > (transform.position.y + 2) && onGround)
         {
             Vector2 jumpDirection = (player.transform.position - transform.position).normalized;
@@ -255,7 +306,12 @@ public class Enemy : MonoBehaviour
 
         Vector2 runningDirection = new Vector2(oppositeDirection.x, 0);
         // Set the velocity to move away from the player
-        rb.velocity = runningDirection * stats.Speed * 2;
+        // Preserve the existing vertical velocity
+        float clampedYVelocity = Mathf.Clamp(rb.velocity.y, -stats.Speed * 2, stats.Speed * 2);
+        Vector2 newVelocity = new Vector2(runningDirection.x * stats.Speed * 2, clampedYVelocity);
+
+        // Set the velocity to move away from the player
+        rb.velocity = newVelocity;
 
 
     }

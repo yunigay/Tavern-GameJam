@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 5849452340913652058}
   - component: {fileID: 1486678207}
   - component: {fileID: 1848116371}
+  - component: {fileID: 6917670456951975313}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -131,7 +132,7 @@ MonoBehaviour:
   meleeCirlceRadius: 1
   meleeCooldown: 2.5
   hasCreatedProjectile: 0
-  projectile: {fileID: 0}
+  projectile: {fileID: 3030735716671427733, guid: 59a6dbccaf30b6442bdf878f966eb4ef, type: 3}
   runAway: 0
   gizmosColor: {r: 1, g: 0, b: 0, a: 1}
   virtualCamera: {fileID: 0}
@@ -197,3 +198,15 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
+--- !u!114 &6917670456951975313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5849452340913652055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cf36fefcf7caf74793ac5beb1f4a817, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
