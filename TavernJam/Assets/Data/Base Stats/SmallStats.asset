@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SmallStats
   m_EditorClassIdentifier: 
   Attack: 20
-  attackSpeed: 0.6
+  attackSpeed: 0.7
   MaxHealth: 40
   CurrentHealth: 40
   Speed: 16

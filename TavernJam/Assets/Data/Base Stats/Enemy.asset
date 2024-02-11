@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Attack: 20
   attackSpeed: 0
-  MaxHealth: 100
-  CurrentHealth: 100
-  Speed: 8
+  MaxHealth: 60
+  CurrentHealth: 60
+  Speed: 11
   dashSpeed: 0
   dashCooldown: 0
   jumpForce: 10

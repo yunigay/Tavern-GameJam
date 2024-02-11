@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BigStats
   m_EditorClassIdentifier: 
   Attack: 30
-  attackSpeed: 0.4
+  attackSpeed: 0.5
   MaxHealth: 120
   CurrentHealth: 120
   Speed: 12

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MediumStats 1
   m_EditorClassIdentifier: 
   Attack: 25
-  attackSpeed: 0.5
+  attackSpeed: 0.6
   MaxHealth: 80
   CurrentHealth: 80
   Speed: 14

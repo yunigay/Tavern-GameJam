@@ -4,7 +4,7 @@ using UnityEngine;
 public class EnemySpawn : MonoBehaviour
 {
     public GameObject enemyPrefab;
-    private int numOfEnemies = 3;
+    private int numOfEnemies = 1;
     public GameObject player;
     private float canSpawnDistance = 5;
     private bool hasSpawned = false;

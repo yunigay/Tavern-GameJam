@@ -41,6 +41,7 @@ public class Enemy : MonoBehaviour
     private bool isChasing = true;
     private bool isClimbing = false;
     private bool isTakingDamage = false;
+    private bool onSpawn;
 
     private HealthComponent healthComponent;
     [SerializeField]
