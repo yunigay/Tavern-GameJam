@@ -9,6 +9,7 @@ TagManager:
   - Platform
   - Bread
   - End
+  - ScoreText
   layers:
   - Default
   - TransparentFX

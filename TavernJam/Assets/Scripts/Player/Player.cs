@@ -28,6 +28,7 @@ public class Player : MonoBehaviour
 
     public float fallMultiplier = 2.5f;
     public float lowJumpMultiplier = 2f;
+    public float finalPoints;
 
     public float attackRadius = 3.5f;
 
@@ -41,7 +42,7 @@ public class Player : MonoBehaviour
 
     private bool canShoot = true;
 
-    private bool isDying = false;
+    public bool isDying = false;
 
     public float dashDuration = 1.0f;
 
@@ -84,6 +85,8 @@ public class Player : MonoBehaviour
     public AudioClip dashSound; // Assign your sound effect in the Unity Editor or through code
 
     private float timer = 0f;
+
+    public bool youWon = false;
     private void Start()
     {
         soundManager = GetComponent<SoundManger>();
@@ -131,7 +134,7 @@ public class Player : MonoBehaviour
         float timeBonus = CalculateTimeBonus();
         float formPoints = CalculateFormPoints();
 
-        float finalPoints = timeBonus + formPoints;
+        finalPoints = timeBonus + formPoints;
 
         // Display the final points or use them as needed
         Debug.Log("Final Points: " + finalPoints);
@@ -139,7 +142,7 @@ public class Player : MonoBehaviour
         Input.ResetInputAxes();
         // Additional logic or UI display if needed
         yield return new WaitForSeconds(5f);
-        SceneManager.LoadScene("Main Menu");
+        youWon = true;
     }
 
     private float CalculateTimeBonus()
@@ -492,7 +495,7 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(animationLength + 4f);
 
         // Destroy the GameObject
-        ReloadScene();
+       // ReloadScene();
     }
 
     private void MeleeAttack()
