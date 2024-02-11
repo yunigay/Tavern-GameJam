@@ -1,8 +1,10 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -36,6 +38,7 @@ public class Player : MonoBehaviour
     public GameObject bulletPrefab;
     public Transform bulletSpawnPoint;
 
+
     private bool canShoot = true;
 
     private bool isDying = false;
@@ -46,7 +49,7 @@ public class Player : MonoBehaviour
     AnimatorStateInfo stateInfo;
 
     private bool isSliding = false;
-    private float slideDuration = 1.5f;
+    private float slideDuration = 2.0f;
     private float slideTimer = 0.0f;
 
 
@@ -54,8 +57,14 @@ public class Player : MonoBehaviour
     private bool isDashing = false;
     private bool isJumping = false;
     private bool canDash = true;
+    private bool isTakingDamage = false;
+    private bool hasWallJumped = false;
     private bool isGrounded;
+    private bool isOnPlatform;
+    private bool isWall;
     private LayerMask groundLayer;
+    private LayerMask platformLayer;
+    private LayerMask wallLayer;
     private Vector2 movement;
 
     private float groundCheckDistance = 0.8f;
@@ -65,6 +74,7 @@ public class Player : MonoBehaviour
     float horizontalInput;
     float meleePointOffset = 1.5f;
 
+
     private SoundManger soundManager;
     public AudioClip takeDamageSound; // Assign your sound effect in the Unity Editor or through code
     public AudioClip throwAttackSound; // Assign your sound effect in the Unity Editor or through code
@@ -73,15 +83,18 @@ public class Player : MonoBehaviour
     public AudioClip jumpSound; // Assign your sound effect in the Unity Editor or through code
     public AudioClip dashSound; // Assign your sound effect in the Unity Editor or through code
 
-
+    private float timer = 0f;
     private void Start()
     {
         soundManager = GetComponent<SoundManger>();
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         groundLayer = LayerMask.GetMask("Ground"); // Make sure to set the ground layer in Unity
+        platformLayer = LayerMask.GetMask("Platform"); // Make sure to set the ground layer in Unity
+        wallLayer = LayerMask.GetMask("Wall"); // Make sure to set the ground layer in Unity
         SwitchForm(PlayerForm.Big);
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        timer = 0f;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -93,22 +106,79 @@ public class Player : MonoBehaviour
             {
                 SwitchForm(PlayerForm.Medium);
                 health.SetMaxHealth(mediumFormStats.MaxHealth);
+                health.SetCurrentHealth(mediumFormStats.CurrentHealth);
             }
             else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && health.GetCurrentHealth() > smallFormStats.MaxHealth)
             {
                 SwitchForm(PlayerForm.Big);
                 health.SetMaxHealth(bigFormStats.MaxHealth);
+                health.SetCurrentHealth(bigFormStats.CurrentHealth);
+
             }
             Destroy(collision.collider.gameObject);
 
         }
+        if (collision.collider.CompareTag("End"))
+        {
+            StartCoroutine(completeGame());
+        }
+    }
+
+    private IEnumerator completeGame()
+    {
+        Debug.Log("end");
+
+        float timeBonus = CalculateTimeBonus();
+        float formPoints = CalculateFormPoints();
+
+        float finalPoints = timeBonus + formPoints;
+
+        // Display the final points or use them as needed
+        Debug.Log("Final Points: " + finalPoints);
+
+        Input.ResetInputAxes();
+        // Additional logic or UI display if needed
+        yield return new WaitForSeconds(5f);
+        SceneManager.LoadScene("Main Menu");
+    }
+
+    private float CalculateTimeBonus()
+    {
+        // Assuming you want to give more points for a faster completion time
+        float maxTime = 600f;  // Adjust this to your desired maximum time
+        float timeBonus = Mathf.Clamp(maxTime - timer, 0f, maxTime) * 0.1f;  // Adjust multiplier as needed
+
+        return timeBonus;
+    }
+
+    private float CalculateFormPoints()
+    {
+        // Get points based on the current form
+        float formPoints = 0f;
+
+        switch (currentForm)
+        {
+            case PlayerForm.Big:
+                formPoints = 50f;  // Adjust points for big form
+                break;
+            case PlayerForm.Medium:
+                formPoints = 30f;  // Adjust points for medium form
+                break;
+            case PlayerForm.Small:
+                formPoints = 10f;  // Adjust points for small form
+                break;
+        }
+
+        return formPoints;
     }
     private void Update()
     {
         stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-
+        timer += Time.deltaTime;
         // Check if the player is grounded
         isGrounded = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer);
+        isOnPlatform = Physics2D.OverlapCircle(transform.position, 0.8f, platformLayer);
+        isWall = Physics2D.OverlapCircle(transform.position, 0.8f, wallLayer);
         // Handle player input
         horizontalInput = Input.GetAxis("Horizontal");
         FlipPlayer(horizontalInput);
@@ -127,16 +197,25 @@ public class Player : MonoBehaviour
                 StartCoroutine(Dash(horizontalInput));
             }
             // Jumping
-            if (isGrounded && Input.GetButtonDown("Jump"))
+            if (isGrounded && Input.GetButtonDown("Jump") || isOnPlatform && Input.GetButtonDown("Jump"))
             {
                 Jump();
             }
 
-            if (isGrounded)
+            if (isWall && Input.GetButtonDown("Jump") && !hasWallJumped)
+            {
+                WallJump();
+                hasWallJumped = true; // Set to true when wall jumping
+            }
+
+            if (isGrounded || isOnPlatform)
             {
                 isJumping = false;
+                hasWallJumped = false; // Reset wall jump when grounded or on a platform
             }
-            else if (!isGrounded && !isDashing && !isSliding && !isAttacking && !isDying)
+
+
+            else if (!isGrounded && !isDashing && !isSliding && !isAttacking && !isDying && !isOnPlatform && !isTakingDamage)
             {
                 if (!stateInfo.IsName("Dash"))
                     animator.Play("Jump");
@@ -172,13 +251,19 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void WallJump()
+    {
+        soundManager.PlaySoundEffect(jumpSound, 0.7f);
+        isJumping = true;
+        rb.velocity = new Vector2(rb.velocity.x, baseStats.jumpForce);
+    }
     private void Move(float horizontalInput)
     {
         if (IsGroundedOnSides())
         {
             movement = new Vector2(horizontalInput * baseStats.Speed, rb.velocity.y);
             rb.velocity = movement;
-            if (isGrounded && !isJumping && !isSliding && !isAttacking && !isDying)
+            if ((isGrounded || isOnPlatform) && !isJumping && !isSliding && !isAttacking && !isDying && !isTakingDamage)
             {
                 if (rb.velocity.magnitude == 0 || horizontalInput == 0)
                 {
@@ -196,7 +281,16 @@ public class Player : MonoBehaviour
     {
         soundManager.PlaySoundEffect(jumpSound, 0.7f);
         isJumping = true;
-        rb.velocity = new Vector2(rb.velocity.x, baseStats.jumpForce);
+        if (isSliding)
+        {
+            Debug.Log("big jump");
+            rb.velocity = new Vector2(rb.velocity.x, baseStats.jumpForce * 1.5f);
+            canDash = true;
+        }
+        else
+        {
+            rb.velocity = new Vector2(rb.velocity.x, baseStats.jumpForce);
+        }
     }
 
     private void ApplyFallMultiplier()
@@ -231,7 +325,7 @@ public class Player : MonoBehaviour
 
         // Stop the dash and prevent upward movement
         isDashing = false;
-        if (isGrounded)
+        if (isGrounded || isOnPlatform)
         {
             isSliding = true;
         }
@@ -239,17 +333,20 @@ public class Player : MonoBehaviour
 
         // Set cooldown
         yield return new WaitForSeconds(baseStats.dashCooldown);
-        canDash = true;
+        if (canDash == false)
+        {
+            canDash = true;
+        }
 
     }
 
     private void Slide(float horizontalInput)
     {
-        if (isGrounded)
+        if (isGrounded || isOnPlatform)
         {
 
             // Gradually reduce velocity during the sliding state
-            rb.velocity = new Vector2(Mathf.Lerp(horizontalInput * (baseStats.dashSpeed / 1.5f), 0f, slideTimer / slideDuration), rb.velocity.y);
+            rb.velocity = new Vector2(Mathf.Lerp(horizontalInput * (baseStats.dashSpeed), 0f, slideTimer / slideDuration), rb.velocity.y);
 
             // Update the sliding timer
             slideTimer += Time.deltaTime;
@@ -307,39 +404,76 @@ public class Player : MonoBehaviour
         RaycastHit2D hitMiddle = Physics2D.Raycast(middle, Vector2.right * direction, groundCheckDistance, groundLayer);
         RaycastHit2D hitBottom = Physics2D.Raycast(bottom, Vector2.right * direction, groundCheckDistance, groundLayer);
 
+        RaycastHit2D hitTop2 = Physics2D.Raycast(top, Vector2.right * direction, groundCheckDistance, wallLayer);
+        RaycastHit2D hitMiddle2 = Physics2D.Raycast(middle, Vector2.right * direction, groundCheckDistance, wallLayer);
+        RaycastHit2D hitBottom2 = Physics2D.Raycast(bottom, Vector2.right * direction, groundCheckDistance, wallLayer);
+
+        RaycastHit2D hitTop3 = Physics2D.Raycast(top, Vector2.right * direction, groundCheckDistance, platformLayer);
+        RaycastHit2D hitMiddle3 = Physics2D.Raycast(middle, Vector2.right * direction, groundCheckDistance, platformLayer);
+        RaycastHit2D hitBottom3 = Physics2D.Raycast(bottom, Vector2.right * direction, groundCheckDistance, platformLayer);
+
         // Visualize the raycasts
         Debug.DrawLine(top, top + Vector2.right * direction * groundCheckDistance, Color.red);
         Debug.DrawLine(middle, middle + Vector2.right * direction * groundCheckDistance, Color.green);
         Debug.DrawLine(bottom, bottom + Vector2.right * direction * groundCheckDistance, Color.blue);
 
-        return (hitTop.collider == null) && (hitMiddle.collider == null) && (hitBottom.collider == null);
+        return (hitTop.collider == null) && (hitMiddle.collider == null) && (hitBottom.collider == null) &&
+            (hitTop2.collider == null) && (hitMiddle2.collider == null) && (hitBottom2.collider == null) &&
+            (hitTop3.collider == null) && (hitMiddle3.collider == null) && (hitBottom3.collider == null);
     }
-
-
 
 
 
     public void TakeDamage(float damage)
     {
-        health.ReceiveDamage(damage);
-        soundManager.PlaySoundEffect(takeDamageSound);
-        Debug.Log(health.GetCurrentHealth());
-        // Check for form switch based on health
-        if (health.GetCurrentHealth() <= 0f)
+        if (!isTakingDamage)
         {
-            StartCoroutine(DestroyAfterAnimation(gameObject));
-        }
-        else if (health.GetCurrentHealth() <= smallFormStats.MaxHealth && currentForm != PlayerForm.Small)
-        {
-            SwitchForm(PlayerForm.Small);
-            health.SetMaxHealth(smallFormStats.MaxHealth);
+            health.ReceiveDamage(damage);
+            soundManager.PlaySoundEffect(takeDamageSound);
+            animator.Play("TakeDamage");
 
+            isTakingDamage = true;
+
+            // Check for form switch based on health
+            if (health.GetCurrentHealth() <= 0f)
+            {
+                StartCoroutine(DestroyAfterAnimation(gameObject));
+            }
+            else if (health.GetCurrentHealth() <= smallFormStats.MaxHealth && currentForm != PlayerForm.Small)
+            {
+                SwitchForm(PlayerForm.Small);
+                health.SetMaxHealth(smallFormStats.MaxHealth);
+
+            }
+            else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && health.GetCurrentHealth() > smallFormStats.MaxHealth && currentForm != PlayerForm.Medium)
+            {
+                SwitchForm(PlayerForm.Medium);
+                health.SetMaxHealth(mediumFormStats.MaxHealth);
+            }
+
+            StartCoroutine(ResetIsTakingDamageAfterAnimation());
         }
-        else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && health.GetCurrentHealth() > smallFormStats.MaxHealth && currentForm != PlayerForm.Medium)
-        {
-            SwitchForm(PlayerForm.Medium);
-            health.SetMaxHealth(mediumFormStats.MaxHealth);
-        }
+    }
+
+    private IEnumerator ResetIsTakingDamageAfterAnimation()
+    {
+        // Get the length of the TakeDamage animation
+        float animationLength = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+
+        // Wait for the animation to finish
+        yield return new WaitForSeconds(animationLength);
+
+        // Reset the flag back to false
+        isTakingDamage = false;
+    }
+
+    public void ReloadScene()
+    {
+
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+
+        // Reload the current scene
+        SceneManager.LoadScene(currentSceneIndex);
     }
 
     private IEnumerator DestroyAfterAnimation(GameObject death)
@@ -355,10 +489,10 @@ public class Player : MonoBehaviour
         float animationLength = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
 
         // Wait for the animation to finish
-        yield return new WaitForSeconds(animationLength + 0.1f);
+        yield return new WaitForSeconds(animationLength + 4f);
 
         // Destroy the GameObject
-        Destroy(death);
+        ReloadScene();
     }
 
     private void MeleeAttack()

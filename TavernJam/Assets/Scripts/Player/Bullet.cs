@@ -13,6 +13,7 @@ public class Bullet : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
     }
 
     public void SetDamage(float damageValue)
@@ -26,14 +27,14 @@ public class Bullet : MonoBehaviour
             Enemy enemy = collision.collider.GetComponent<Enemy>();
             if (rb.velocity.magnitude >= damageThresholdSpeed)
             {
-               
+
                 if (enemy != null)
                 {
                     enemy.TakeDamage(damage);
                 }
                 rb.AddForce(Vector2.up * 15f, ForceMode2D.Impulse);
             }
-            else 
+            else
             {
                 if (enemy.runAway == false)
                 {
@@ -44,5 +45,5 @@ public class Bullet : MonoBehaviour
             }
         }
     }
-   
+
 }

@@ -19,6 +19,7 @@ public class Enemy : MonoBehaviour
     private LayerMask groundLayer;
     private LayerMask platformLayer;
     bool onGround = true;
+    bool onPlatform = true;
     protected bool isInRange = false;
     protected bool canMelee = true;
     protected bool isAttacking = false;
@@ -30,23 +31,23 @@ public class Enemy : MonoBehaviour
     private float meleeCirlceRadius = 1.0f;
     [SerializeField]
     private float meleeCooldown = 5f;
-    private float jumpCooldown = 0.3f;
+    private float jumpCooldown = 2f;
     [SerializeField]
     private bool hasCreatedProjectile = false;
     float playerHealthCache;
-    private int hitNumber;
     public GameObject projectile;
     private bool haveProjectile = false;
     public bool runAway;
     private bool isChasing = true;
+    private bool isClimbing = false;
+    private bool isTakingDamage = false;
+
     private HealthComponent healthComponent;
     [SerializeField]
     private Color gizmosColor = Color.red;  // Color for the Gizmos sphere
     private Vector3 spawnPos;
     public EnemySpawn spawn;
 
-    private bool onSpawn = false;
-    private Transform newLookAtTarget;
     public CinemachineVirtualCamera virtualCamera;
 
     private SoundManger soundManager;
@@ -74,16 +75,15 @@ public class Enemy : MonoBehaviour
     private void Update()
     {
         IsGroundedOnSides();
-        onGround = Physics2D.OverlapCircle(transform.position, 0.7f, groundLayer | platformLayer);
-        if (onGround && isChasing)
+        Debug.Log(IsGroundedOnSides());
+        onGround = Physics2D.OverlapCircle(transform.position, 0.7f, groundLayer);
+        onPlatform = Physics2D.OverlapCircle(transform.position, 0.7f, platformLayer);
+        if ((onGround || onPlatform) && isChasing)
         {
             MoveToPlayer();
 
         }
-        if (!onGround && isChasing && !canJump)
-        {
-            SlightAerialMovement();
-        }
+      
         if (canJump)
         {
             JumpToPlayer();
@@ -110,7 +110,7 @@ public class Enemy : MonoBehaviour
     {
         if (IsGroundedOnSides())
         {
-            if (!isAttacking)
+            if (!isAttacking && !isClimbing && !isTakingDamage)
             {
                 animator.Play("BugRun");
                 Vector2 direction = (player.transform.position - transform.position).normalized;
@@ -126,6 +126,7 @@ public class Enemy : MonoBehaviour
                 FlipEnemy();
                 Debug.Log("Chasing");
                 Debug.Log(transform.position);
+                Debug.Log("running");
 
             }
             float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
@@ -134,27 +135,40 @@ public class Enemy : MonoBehaviour
                 // Stop horizontal movement if the enemy is close enough to the player
                 rb.velocity = new Vector2(0f, rb.velocity.y);
                 Debug.Log("Chasing2");
+                Debug.Log("too close");
+
             }
         }
-        else 
+        else
         {
-            rb.velocity = new Vector2(0.3f, 2.0f);
+            StartCoroutine(MoveBackwardAndJump());
         }
     }
-    protected void SlightAerialMovement()
+
+    private IEnumerator MoveBackwardAndJump()
     {
-        Vector2 direction = (player.transform.position - transform.position).normalized;
+       if (!isClimbing){
+            isClimbing = true;
+            // Calculate the opposite direction from the player
+            Vector2 oppositeDirection = -(player.transform.position - transform.position).normalized;
 
-        // Set only the horizontal component of the chasingDirection
-        chasingDirection = new Vector2(direction.x, 0f);
+            // Move backward for 0.5 seconds
+            rb.velocity = oppositeDirection * stats.Speed * 1.2f;
+            yield return new WaitForSeconds(0.1f);
 
-        // Set the horizontal velocity
-        rb.velocity += chasingDirection * 0.8f;
+            // Jump towards the player
+            Vector2 jumpDirection = (new Vector3(player.transform.position.x, player.transform.position.y * 1.2f, player.transform.position.z) - transform.position).normalized;
+            Vector2 jumpDirection2 = (new Vector3(player.transform.position.x * 1.1f, player.transform.position.y, player.transform.position.z) - transform.position).normalized;
+            rb.AddForce(jumpDirection * stats.jumpForce, ForceMode2D.Impulse);
+            yield return new WaitForSeconds(0.2f);
+            rb.AddForce(jumpDirection2 * stats.jumpForce, ForceMode2D.Impulse);
+            yield return new WaitForSeconds(0.5f);
+            isClimbing = false;
+        }
 
 
-        // Flip the enemy based on its velocity
-        FlipEnemy();
     }
+
     private bool IsGroundedOnSides()
     {
         // Get the bounds of the player's collider
@@ -223,7 +237,6 @@ public class Enemy : MonoBehaviour
 
                     StartCoroutine(MeleeCooldown());
 
-                    // Check if the player's form has changed
 
                 }
             }
@@ -270,24 +283,42 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        healthComponent.ReceiveDamage(damage);
-        soundManager.PlaySoundEffect(takeDamageSound);
-        Debug.Log(healthComponent.GetCurrentHealth());
-        if (healthComponent.GetCurrentHealth() <= 0f && !hasCreatedProjectile)
-        {
-            OnDeath(gameObject);
-            if (haveProjectile)
+            healthComponent.ReceiveDamage(damage);
+            soundManager.PlaySoundEffect(takeDamageSound);
+            animator.Play("BugTakeDamage");
+            if (healthComponent.GetCurrentHealth() <= 0f && !hasCreatedProjectile)
             {
-                CreateProjectileOnDeath();
-                hasCreatedProjectile = true;
+                OnDeath(gameObject);
+
+                if (haveProjectile)
+                {
+                    CreateProjectileOnDeath();
+                    hasCreatedProjectile = true;
+                }
             }
-        }
+
+            StartCoroutine(ResetIsTakingDamageAfterAnimation());
+    }
+
+    private IEnumerator ResetIsTakingDamageAfterAnimation()
+    {
+        // Assuming you have an Animator component for the enemy
+        Animator enemyAnimator = GetComponent<Animator>();
+
+        // Get the length of the TakeDamage animation
+        float animationLength = enemyAnimator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+
+        // Wait for the animation to finish
+        yield return new WaitForSeconds(animationLength);
+
+        // Reset the flags back to false
+        isTakingDamage = false;
     }
 
     private void JumpToPlayer()
     {
 
-        if (player.transform.position.y > (transform.position.y + 2) && onGround)
+        if (player.transform.position.y > (transform.position.y + 1))
         {
             Vector2 jumpDirection = (player.transform.position - transform.position).normalized;
             rb.AddForce(jumpDirection * stats.jumpForce, ForceMode2D.Impulse);
