@@ -8,6 +8,7 @@ TagManager:
   - Ground
   - Platform
   - Bread
+  - End
   layers:
   - Default
   - TransparentFX
