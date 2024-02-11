@@ -30,7 +30,7 @@ public class Enemy : MonoBehaviour
     private float meleeCirlceRadius = 1.0f;
     [SerializeField]
     private float meleeCooldown = 5f;
-    private float jumpCooldown = 0.3f;
+    private float jumpCooldown = 1f;
     [SerializeField]
     private bool hasCreatedProjectile = false;
     float playerHealthCache;
@@ -256,7 +256,7 @@ public class Enemy : MonoBehaviour
     private void JumpToPlayer()
     {
 
-        if (player.transform.position.y > (transform.position.y + 2) && onGround)
+        if (player.transform.position.y > (transform.position.y + 2))
         {
             Vector2 jumpDirection = (player.transform.position - transform.position).normalized;
             rb.AddForce(jumpDirection * stats.jumpForce, ForceMode2D.Impulse);
