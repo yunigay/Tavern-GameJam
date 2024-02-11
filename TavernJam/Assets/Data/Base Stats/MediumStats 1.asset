@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: MediumStats 1
   m_EditorClassIdentifier: 
   Attack: 25
-  MaxHealth: 70
-  CurrentHealth: 70
+  attackSpeed: 0.5
+  MaxHealth: 80
+  CurrentHealth: 80
   Speed: 15
-  dashSpeed: 50
+  dashSpeed: 45
   dashCooldown: 2
   jumpForce: 9

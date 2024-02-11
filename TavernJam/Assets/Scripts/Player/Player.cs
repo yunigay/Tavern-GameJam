@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,8 +26,19 @@ public class Player : MonoBehaviour
 
     public float fallMultiplier = 2.5f;
     public float lowJumpMultiplier = 2f;
-    public float attackRadius = 2f;
 
+    public float attackRadius = 3.5f;
+
+    private bool canAttack = true;
+
+    private bool isAttacking = false;
+
+    public GameObject bulletPrefab;
+    public Transform bulletSpawnPoint;
+
+    private bool canShoot = true;
+
+    private bool isDying = false;
 
     public float dashDuration = 1.0f;
 
@@ -50,6 +62,9 @@ public class Player : MonoBehaviour
 
     private Enemy enemy;
 
+    float horizontalInput;
+    float meleePointOffset = 1.5f;
+
 
     private void Start()
     {
@@ -59,7 +74,23 @@ public class Player : MonoBehaviour
         SwitchForm(PlayerForm.Big);
     }
 
-
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.CompareTag("Bread"))
+        {
+            if (health.GetCurrentHealth() <= smallFormStats.MaxHealth)
+            {
+                SwitchForm(PlayerForm.Medium);
+                health.SetMaxHealth(mediumFormStats.MaxHealth);
+            }
+            else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && health.GetCurrentHealth() > smallFormStats.MaxHealth)
+            {
+                SwitchForm(PlayerForm.Big);
+                health.SetMaxHealth(bigFormStats.MaxHealth);
+            }
+           
+        }
+    }
     private void Update()
     {
         stateInfo = animator.GetCurrentAnimatorStateInfo(0);
@@ -67,7 +98,7 @@ public class Player : MonoBehaviour
         // Check if the player is grounded
         isGrounded = Physics2D.OverlapCircle(transform.position, 0.8f, groundLayer);
         // Handle player input
-        float horizontalInput = Input.GetAxis("Horizontal");
+        horizontalInput = Input.GetAxis("Horizontal");
         FlipPlayer(horizontalInput);
         // Move the player
 
@@ -93,9 +124,9 @@ public class Player : MonoBehaviour
             {
                 isJumping = false;
             }
-            else if(!isGrounded && !isDashing && !isSliding)
+            else if (!isGrounded && !isDashing && !isSliding && !isAttacking && !isDying)
             {
-                if(!stateInfo.IsName("Dash"))
+                if (!stateInfo.IsName("Dash"))
                     animator.Play("Jump");
             }
 
@@ -118,9 +149,14 @@ public class Player : MonoBehaviour
                 Slide(horizontalInput);
             }
         }
-        if (Input.GetButtonDown("Fire1"))
+        if (Input.GetButtonDown("Fire1") && canAttack)
         {
             MeleeAttack();
+        }
+
+        if (Input.GetButtonDown("Fire2") && canShoot)
+        {
+            RangedAttack();
         }
     }
 
@@ -128,9 +164,9 @@ public class Player : MonoBehaviour
     {
         if (IsGroundedOnSides())
         {
-                movement = new Vector2(horizontalInput * baseStats.Speed, rb.velocity.y);
-                rb.velocity = movement;
-            if (isGrounded && !isJumping && !isSliding)
+            movement = new Vector2(horizontalInput * baseStats.Speed, rb.velocity.y);
+            rb.velocity = movement;
+            if (isGrounded && !isJumping && !isSliding && !isAttacking && !isDying)
             {
                 if (rb.velocity.magnitude == 0 || horizontalInput == 0)
                 {
@@ -146,6 +182,7 @@ public class Player : MonoBehaviour
 
     private void Jump()
     {
+
         isJumping = true;
         rb.velocity = new Vector2(rb.velocity.x, baseStats.jumpForce);
     }
@@ -273,60 +310,148 @@ public class Player : MonoBehaviour
                (hitMiddleLeft.collider == null && hitMiddleRight.collider == null);
     }
 
-  
 
 
-    public void TakeDamage(float damage) 
+
+    public void TakeDamage(float damage)
     {
         health.ReceiveDamage(damage);
+
 
         // Check for form switch based on health
         if (health.GetCurrentHealth() <= 0f)
         {
-            OnDeath(gameObject);
+            StartCoroutine(DestroyAfterAnimation(gameObject));
         }
         else if (health.GetCurrentHealth() <= smallFormStats.MaxHealth && currentForm != PlayerForm.Small)
         {
             SwitchForm(PlayerForm.Small);
+            health.SetMaxHealth(smallFormStats.MaxHealth);
+
         }
-        else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && currentForm != PlayerForm.Medium)
+        else if (health.GetCurrentHealth() <= mediumFormStats.MaxHealth && health.GetCurrentHealth() > smallFormStats.MaxHealth && currentForm != PlayerForm.Medium)
         {
             SwitchForm(PlayerForm.Medium);
+            health.SetMaxHealth(mediumFormStats.MaxHealth);
         }
     }
 
-    private void OnDeath(GameObject death) 
+    private IEnumerator DestroyAfterAnimation(GameObject death)
     {
+        isDying = true;
+        Input.ResetInputAxes();
+        // Play the specified animation
+        animator.Play("Death");
+
+        // Get the length of the specified animation
+        float animationLength = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+
+        // Wait for the animation to finish
+        yield return new WaitForSeconds(animationLength +0.1f);
+
+        // Destroy the GameObject
         Destroy(death);
     }
 
     private void MeleeAttack()
     {
-        // Cast a ray from the mouse position
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
+       
+        float animationLength = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+        isAttacking = true;
+        animator.Play("ThrowAttack");
+        StartCoroutine(ResetIsAttackingAfterAnimationHit(animationLength + 0.1f));
 
-        RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+        StartCoroutine(MeleeAttackCooldown());
 
-        if (hit.collider != null)
+     
+    }
+    private IEnumerator ResetIsAttackingAfterAnimationHit(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Vector2 chasingDirection = new Vector2(horizontalInput, 0.0f);
+        Vector2 position = transform.position;
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(position + chasingDirection * meleePointOffset, attackRadius);
+        foreach (var hitCollider in hitColliders)
         {
-            // Check if the hit collider is an enemy
-            if (hit.collider.CompareTag("Enemy"))
+            if (hitCollider.CompareTag("Enemy"))
             {
-                Enemy enemy = hit.collider.GetComponent<Enemy>();
+                enemy = hitCollider.GetComponent<Enemy>();
+                enemy.TakeDamage(baseStats.Attack);
 
-                // Check if the enemy is within the attack radius
-                float distanceToEnemy = Vector2.Distance(transform.position, enemy.transform.position);
-
-                if (distanceToEnemy <= attackRadius)
-                {
-                    // Deal damage to the enemy
-                 enemy.TakeDamage(baseStats.Attack);
-                }
             }
         }
+
+        isAttacking = false;
+    }
+    private IEnumerator MeleeAttackCooldown()
+    {
+        canAttack = false;
+
+        // Wait for the attack speed duration
+        yield return new WaitForSeconds(1.0f / baseStats.attackSpeed);
+
+        // Reset the attack cooldown
+        canAttack = true;
+    }
+    private void OnDrawGizmos()
+    {
+        // Draw the attack radius in the Scene view when selected
+        Gizmos.color = Color.red;
+        Vector2 chasingDirection = new Vector2(horizontalInput, 0.0f);
+        Vector2 position = transform.position;
+        Gizmos.DrawWireSphere(position + chasingDirection * meleePointOffset, attackRadius);
     }
 
+    private void RangedAttack()
+    {
+        float animationLength = animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+
+        isAttacking = true;
+        animator.Play("ThrowAttack");
+        StartCoroutine(ResetIsAttackingAfterAnimationHitRanged(animationLength + 0.1f));
+
+        StartCoroutine(RangedAttackCooldown());
+    }
+
+    private IEnumerator RangedAttackCooldown()
+    {
+        canShoot = false;
+
+        // Wait for the attack speed duration
+        yield return new WaitForSeconds(1.0f / baseStats.attackSpeed);
+
+        // Reset the attack cooldown
+        canShoot = true;
+    }
+
+    private IEnumerator ResetIsAttackingAfterAnimationHitRanged(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // Instantiate a bullet
+        GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+
+        // Get the bullet component and set its damage
+        Bullet bulletComponent = bullet.GetComponent<Bullet>();
+        if (bulletComponent != null)
+        {
+            bulletComponent.SetDamage(baseStats.Attack * 2f);
+
+            // Calculate the direction the player is facing
+            Vector2 direction = transform.localScale.x < 0 ? Vector2.right : Vector2.left;
+
+            // Apply force to the bullet in the calculated direction
+            Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
+            if (bulletRb != null)
+            {
+                bulletRb.AddForce(direction * 30, ForceMode2D.Impulse);
+            }
+        }
+
+        isAttacking = false;
+        this.TakeDamage(40);
+
+    }
 
     private void SwitchForm(PlayerForm newForm)
     {
@@ -338,7 +463,7 @@ public class Player : MonoBehaviour
         {
             case PlayerForm.Big:
                 baseStats = bigFormStats;
-                animator.runtimeAnimatorController = GetComponent<Animator>().runtimeAnimatorController;
+                animator.runtimeAnimatorController = bigFormAnimator.runtimeAnimatorController;
                 break;
             case PlayerForm.Medium:
                 baseStats = mediumFormStats;
