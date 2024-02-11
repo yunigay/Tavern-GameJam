@@ -368,8 +368,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 125941257}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.5775, y: -1.42, z: 0}
-  m_LocalScale: {x: 29.20094, y: 1, z: 1}
+  m_LocalPosition: {x: 27.9163, y: -1.1938, z: 0}
+  m_LocalScale: {x: 67.87759, y: 0.5476, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -523,6 +523,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy
       objectReference: {fileID: 0}
+    - target: {fileID: 5849452340913652055, guid: 725acb01dee366c4b97f55967b7dd1ce, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5849452340913652057, guid: 725acb01dee366c4b97f55967b7dd1ce, type: 3}
       propertyPath: player
       value: 
@@ -671,6 +675,31 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3030735716671427733, guid: 59a6dbccaf30b6442bdf878f966eb4ef, type: 3}
   m_PrefabInstance: {fileID: 1999205113}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1848116365 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5849452340913652055, guid: 725acb01dee366c4b97f55967b7dd1ce, type: 3}
+  m_PrefabInstance: {fileID: 916284713}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1848116371
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848116365}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 42878ed2702d22b488f3ae8ee7d2d5ee, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
 --- !u!1001 &1999205113
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -785,7 +814,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2844524154906958229, guid: fb1f368270359da478d5bae58f7e2a23, type: 3}
       propertyPath: m_WasSpriteAssigned
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fb1f368270359da478d5bae58f7e2a23, type: 3}

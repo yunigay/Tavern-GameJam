@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 252d6c1b8c104e743bc6c6c7cc559574, type: 3}
   m_Name: Base Stats
   m_EditorClassIdentifier: 
-  Attack: 0
+  Attack: 30
   MaxHealth: 100
   CurrentHealth: 100
   Speed: 10
