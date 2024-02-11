@@ -20,6 +20,7 @@ public class Enemy : MonoBehaviour
     protected float health;
     protected bool isInRange = false;
     protected bool canMelee = true;
+    protected bool isAttacking = false;
     bool canJump = true;
     [SerializeField]
     private float meleePointOffset = 1.0f;
@@ -36,6 +37,7 @@ public class Enemy : MonoBehaviour
     private bool haveProjectile = false;
     private bool runAway;
     private bool isChasing = true;
+
 
     protected virtual void Awake()
     {
@@ -74,6 +76,7 @@ public class Enemy : MonoBehaviour
 
     protected void MoveToPlayer()
     {
+        animator.Play("BugRun");
         Vector2 direction = (player.transform.position - transform.position).normalized;
 
         // Set only the horizontal component of the chasingDirection
@@ -114,6 +117,9 @@ public class Enemy : MonoBehaviour
 
     public void Melee()
     {
+        if (isAttacking)
+        {
+        }
         Vector2 position = transform.position;
         Collider2D[] colliders = Physics2D.OverlapCircleAll(position + chasingDirection * meleePointOffset, meleeCirlceRadius);
 
@@ -128,6 +134,8 @@ public class Enemy : MonoBehaviour
                     Debug.Log(pHealth.baseStats.CurrentHealth);
                     canMelee = false;
                     hitNumber++;
+            animator.Play("BugAttack");
+                Debug.Log("hit");
 
                     StartCoroutine(MeleeCooldown());
                 }
@@ -183,6 +191,7 @@ public class Enemy : MonoBehaviour
 
     private void RunFromPlayer()
     {
+        animator.Play("BugRunBread");
         haveProjectile = true;
 
         // Calculate the opposite direction from the player

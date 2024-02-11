@@ -34,7 +34,7 @@ public class Player : MonoBehaviour
     AnimatorStateInfo stateInfo;
 
     private bool isSliding = false;
-    private float slideDuration = 2.0f;
+    private float slideDuration = 1.5f;
     private float slideTimer = 0.0f;
 
 
@@ -114,7 +114,7 @@ public class Player : MonoBehaviour
             }
             if (isSliding)
             {
-                Slide();
+                Slide(horizontalInput);
             }
         }
         if (Input.GetButtonDown("Fire1"))
@@ -127,8 +127,8 @@ public class Player : MonoBehaviour
     {
         if (IsGroundedOnSides())
         {
-            movement = new Vector2(horizontalInput * baseStats.Speed, rb.velocity.y);
-            rb.velocity = movement;
+                movement = new Vector2(horizontalInput * baseStats.Speed, rb.velocity.y);
+                rb.velocity = movement;
             if (isGrounded && !isJumping && !isSliding)
             {
                 if (rb.velocity.magnitude == 0 || horizontalInput == 0)
@@ -192,36 +192,24 @@ public class Player : MonoBehaviour
 
     }
 
-    private void Slide()
+    private void Slide(float horizontalInput)
     {
         if (isGrounded)
         {
+
+            // Gradually reduce velocity during the sliding state
+            rb.velocity = new Vector2(Mathf.Lerp(horizontalInput * baseStats.dashSpeed, 0f, slideTimer / slideDuration), rb.velocity.y);
+
             // Update the sliding timer
             slideTimer += Time.deltaTime;
 
-            // Calculate the percentage of slide completion
-            float slideProgress = slideTimer / slideDuration;
-
-            // Gradually reduce velocity during the sliding state for the second half of the duration
-            if (slideProgress > 0.5f)
-            {
-                float t = (slideProgress - 0.5f) / 0.5f;
-                rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, 0f, t), rb.velocity.y);
-            }
-            else
-            {
-                // During the first half of the duration, increase the speed
-                float newSpeed = Mathf.Lerp(0f, baseStats.Speed * 2f, slideProgress * 2f);
-                rb.velocity = new Vector2(newSpeed, rb.velocity.y);
-            }
-
-            // Play the appropriate animation based on slide progress
-            if (slideProgress < 0.5f)
+            if (slideTimer < slideDuration)
             {
                 animator.Play("SlideStart");
             }
             else
             {
+                // After the slide duration, play "SlideEnd" animation and enter the "getting up" period
                 animator.Play("SlideEnd");
 
                 // Delay for the "getting up" period
@@ -244,6 +232,8 @@ public class Player : MonoBehaviour
         isSliding = false;
         slideTimer = 0.0f;
     }
+
+
 
 
     private bool IsGroundedOnSides()
