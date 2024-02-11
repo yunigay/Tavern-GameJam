@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: SmallStats
   m_EditorClassIdentifier: 
   Attack: 20
+  attackSpeed: 0.6
   MaxHealth: 40
   CurrentHealth: 40
   Speed: 20
-  dashSpeed: 60
+  dashSpeed: 50
   dashCooldown: 1
   jumpForce: 10

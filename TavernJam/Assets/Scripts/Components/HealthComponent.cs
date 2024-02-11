@@ -31,7 +31,6 @@ public class HealthComponent : MonoBehaviour
         CurrentHealth = Mathf.Clamp(CurrentHealth_, 0.0f, MaxHealth);
         if (CurrentHealth <= 0.0f)
         {
-            OnDeath?.Invoke(gameObject);
         }
     }
 
